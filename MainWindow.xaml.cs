@@ -35,6 +35,30 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         private byte[] colorPixels;
 
         /// <summary>
+        /// Width of output drawing
+        /// </summary>
+        // ****Ancho de dibujo de salida
+        private const float RenderWidth = 640.0f;
+
+        /// <summary>
+        /// Height of our output drawing
+        /// </summary>
+        // ****Alto de dibujo de salida
+        private const float RenderHeight = 480.0f;
+
+        /// <summary>
+        /// Drawing image that we will display
+        /// </summary>
+        // ****Dibujo de la imagen que se mostrará
+        private DrawingImage imageSource;
+
+        /// <summary>
+        /// Drawing group for skeleton rendering output
+        /// </summary>
+        // ****Grupo de dibujo del esqueleto
+        private DrawingGroup drawingGroup;
+
+        /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         public MainWindow()
@@ -49,6 +73,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+           // Create the drawing group we'll use for drawing
+           this.drawingGroup = new DrawingGroup();
+
+           // Create an image source that we can use in our image control
+           this.imageSource = new DrawingImage(this.drawingGroup);
+
             // Look through all sensors and start the first connected one.
             // This requires that a Kinect is connected at the time of app startup.
             // To make your app robust against plug/unplug, 
@@ -64,7 +94,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
             if (null != this.sensor)
             {
-                // Turn on the color stream to receive color frames
+               this.Indicaciones.Source = this.imageSource;
+
+               // Turn on the skeleton stream to receive skeleton frames
+               this.sensor.SkeletonStream.Enable();
+
+               // Add an event handler to be called whenever there is new color frame data
+               this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
+ 
+               // Turn on the color stream to receive color frames
                 this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
                 // Allocate space to put the pixels we'll receive
@@ -74,7 +112,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 this.colorBitmap = new WriteableBitmap(this.sensor.ColorStream.FrameWidth, this.sensor.ColorStream.FrameHeight, 96.0, 96.0, PixelFormats.Bgr32, null);
 
                 // Set the image we display to point to the bitmap where we'll put the image data
-                this.Image.Source = this.colorBitmap;
+                this.Camara.Source = this.colorBitmap;
 
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.ColorFrameReady += this.SensorColorFrameReady;
@@ -131,6 +169,64 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         0);
                 }
             }
+        }
+
+        /// <summary>
+        /// Event handler for Kinect sensor's SkeletonFrameReady event
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        // ****Controlador de eventos del esqueleto
+        private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
+        {
+           Skeleton[] skeletons = new Skeleton[0];
+
+           using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
+           {
+              if (skeletonFrame != null)
+              {
+                 skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                 skeletonFrame.CopySkeletonDataTo(skeletons);
+              }
+           }
+
+           using (DrawingContext dc = this.drawingGroup.Open())
+           {
+              // Draw a transparent background to set the render size
+              dc.DrawRectangle(Brushes.Transparent, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+
+              if (skeletons.Length != 0)
+              {
+                 foreach (Skeleton skel in skeletons)
+                 {
+
+                    if (skel.TrackingState == SkeletonTrackingState.Tracked)
+                    {
+                       this.prueba(skel, dc);
+                    }
+                    else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
+                    {
+                       // MENSAJE ERROR
+                    }
+                 }
+              }
+
+              // prevent drawing outside of our render area
+              this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+           }
+        }
+
+        /// <summary>
+        /// Maps a SkeletonPoint to lie within our render space and converts to Point
+        /// </summary>
+        /// <param name="skelpoint">point to map</param>
+        /// <returns>mapped point</returns>
+        private Point SkeletonPointToScreen(SkeletonPoint skelpoint)
+        {
+           // Convert point to depth space.  
+           // We are not using depth directly, but we do want the points in our 640x480 output resolution.
+           DepthImagePoint depthPoint = this.sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
+           return new Point(depthPoint.X, depthPoint.Y);
         }
 
         /// <summary>
