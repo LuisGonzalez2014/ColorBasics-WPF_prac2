@@ -127,11 +127,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     this.sensor = null;
                 }
             }
-
-            if (null == this.sensor)
-            {
-                this.statusBarText.Text = Properties.Resources.NoKinectReady;
-            }
         }
 
         /// <summary>
@@ -202,7 +197,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       this.prueba(skel, dc);
+                       //this.prueba(skel, dc);
+                        this.movimientoPierna(skel,0);
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
@@ -238,7 +234,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         {
             if (null == this.sensor)
             {
-                this.statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
                 return;
             }
 
@@ -261,12 +256,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 {
                     encoder.Save(fs);
                 }
-
-                this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteSuccess, path);
             }
             catch (IOException)
             {
-                this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
+                //this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
             }
         }
     }
