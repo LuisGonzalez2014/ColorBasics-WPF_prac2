@@ -32,8 +32,47 @@
          this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
       }
 
+      // Calcula el modulo del vector
+      public double modulo(SkeletonPoint vector)
+      {
+         return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+      }
+
+      // Calcula el producto escalar de los vectores a y b
+      public double producto_escalar(SkeletonPoint a, SkeletonPoint b)
+      {
+         return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+      }
+
+      // Calcula y devuelve por referencia unos valores esenciales para la deteccion de movimientos:
+      // angulo entre el vector base_inicial (vector desde punto_base a punto_inicial) y el vector
+      // base_actual (vector desde punto_base a punto_actual); diferencia_X como valor absoluto de la
+      // diferencia entre la componente X de punto_actual y punto_inicial; diferencia_Z como la
+      // diferencia entre la componente Z de punto_actual y punto_inicial.
+      public void valores_base(SkeletonPoint punto_base, SkeletonPoint punto_inicial, SkeletonPoint punto_actual,
+          out double angulo, out double diferencia_X, out double diferencia_Z)
+      {
+         SkeletonPoint vector_base_inicial = new SkeletonPoint();
+         SkeletonPoint vector_base_actual = new SkeletonPoint();
+
+         vector_base_inicial.X = punto_inicial.X - punto_base.X;
+         vector_base_inicial.Y = punto_inicial.Y - punto_base.Y;
+         vector_base_inicial.Z = punto_inicial.Z - punto_base.Z;
+         vector_base_actual.X = punto_actual.X - punto_base.X;
+         vector_base_actual.Y = punto_actual.Y - punto_base.Y;
+         vector_base_actual.Z = punto_actual.Z - punto_base.Z;
+
+         angulo = Math.Acos(producto_escalar(vector_base_inicial, vector_base_actual) /
+             (modulo(vector_base_inicial) * modulo(vector_base_actual))) / Math.PI * 180.0;
+         diferencia_X = Math.Abs(punto_actual.X - punto_inicial.X);
+         diferencia_Z = punto_actual.Z - punto_inicial.Z;
+      }
+
+
+
       // Devuelve en vector[0] el ángulo de la pierna y en vector[1] el valor de la coordenada x de la rodilla
-      public List<double> movimientoPierna(Skeleton skel, int cad) {
+      public List<double> movimientoPierna(Skeleton skel, int cad, DrawingContext dc)
+      {
          List<double> vector = new List<double>();
 
          Joint rodilla_actual, cadera_actual;
@@ -56,33 +95,14 @@
             fijo = true;
          }
 
-         double cad_X = cadera_actual.Position.X;
-         double rod_X = rodilla_actual.Position.X;
-         double cad_Y = cadera_actual.Position.Y;
-         double rod_Y = rodilla_actual.Position.Y;
-         double cad_Z = cadera_actual.Position.Z;
-         double rod_Z = rodilla_actual.Position.Z;
-         
-         double aX, aY, aZ, bX, bY, bZ;
+         // QUITAR EN VERSIÓN FINAL
+         dc.DrawEllipse(Brushes.Aqua, null, this.SkeletonPointToScreen(cadera_actual.Position), 5, 5);
+         dc.DrawEllipse(Brushes.Aqua, null, this.SkeletonPointToScreen(rodilla_actual.Position), 5, 5);
 
-         // Vector de la cadera a la rodilla en las posiciones iniciales
-         // SÓLO SE MODIFICA LA PRIMERA VEZ.          ********* CAMBIAR **********
-         aX = rodilla.Position.X - cadera.Position.X;
-         aY = rodilla.Position.Y - cadera.Position.Y;
-         aZ = rodilla.Position.Z - cadera.Position.Z;
-
-         // Vector de la cadera a la rodilla en las posiciones actuales
-         bX = rod_X - cad_X;
-         bY = rod_Y - cad_Y;
-         bZ = rod_Z - cad_Z;
-
-         double a_mod = Math.Sqrt(Math.Abs(Math.Pow(aX,2)+Math.Pow(aY,2)+Math.Pow(aZ,2)));
-         double b_mod = Math.Sqrt(Math.Abs(Math.Pow(bX, 2) + Math.Pow(bY, 2) + Math.Pow(bZ, 2)));
-
-         double angulo = Math.Acos(((aX*bX)+(aY*bY)+(aZ*bZ))/(a_mod+b_mod));
-
-         vector[0] = angulo;
-         vector[1] = rod_X;
+         double angulo, a, b;
+         this.valores_base(cadera.Position, rodilla.Position, rodilla_actual.Position, out angulo, out a, out b);
+         vector.Add(angulo);
+         vector.Add(rodilla_actual.Position.X);
 
          ang_pierna.Clear();
          ang_pierna.AppendText(angulo.ToString());

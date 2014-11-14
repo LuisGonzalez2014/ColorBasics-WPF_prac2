@@ -198,7 +198,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                        //this.prueba(skel, dc);
-                        this.movimientoPierna(skel,0);
+                       this.movimientoPierna(skel,0,dc);
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
