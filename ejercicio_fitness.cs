@@ -17,7 +17,6 @@
       bool fijo = false;
       Joint pecho;
 
-
       Joint cadera, rodilla;
 
       public void prueba(Skeleton skel, DrawingContext dc)
@@ -68,8 +67,6 @@
          diferencia_Z = punto_actual.Z - punto_inicial.Z;
       }
 
-
-
       // Devuelve en vector[0] el ángulo de la pierna y en vector[1] el valor de la coordenada x de la rodilla
       public List<double> movimientoPierna(Skeleton skel, int cad, DrawingContext dc)
       {
@@ -88,6 +85,7 @@
             rodilla_actual = skel.Joints[JointType.KneeLeft];
          }
 
+         
          if (!fijo)
          {
             cadera = cadera_actual;
@@ -95,14 +93,36 @@
             fijo = true;
          }
 
-         // QUITAR EN VERSIÓN FINAL
-         dc.DrawEllipse(Brushes.Aqua, null, this.SkeletonPointToScreen(cadera_actual.Position), 5, 5);
-         dc.DrawEllipse(Brushes.Aqua, null, this.SkeletonPointToScreen(rodilla_actual.Position), 5, 5);
-
          double angulo, a, b;
          this.valores_base(cadera.Position, rodilla.Position, rodilla_actual.Position, out angulo, out a, out b);
          vector.Add(angulo);
          vector.Add(rodilla_actual.Position.X);
+
+         Brush color_1 = Brushes.Yellow;
+         Brush color_2 = Brushes.GreenYellow;
+         Brush color_3 = Brushes.Blue;
+         Brush color_4 = Brushes.LightGray;
+         
+         // QUITAR EN VERSIÓN FINAL
+         SkeletonPoint punto_cadera = cadera.Position;
+         SkeletonPoint punto_rodilla = rodilla.Position;
+         SkeletonPoint punto_1 = cadera.Position;
+         SkeletonPoint punto_2 = cadera.Position;
+         SkeletonPoint punto_3 = cadera.Position;
+
+         punto_2.X = (cadera.Position.X + rodilla.Position.X) / 2;
+         punto_2.Y = (cadera.Position.Y + rodilla.Position.Y) / 2;
+         punto_1.X = (cadera.Position.X + rodilla.Position.X) / 2;
+         punto_1.Y = (cadera.Position.Y + punto_2.Y) / 2;
+         punto_3.X = (cadera.Position.X + rodilla.Position.X) / 2;
+         punto_3.Y = (punto_2.Y + rodilla.Position.Y) / 2;
+
+
+         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_cadera), 10, 5);
+         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_rodilla), 10, 5);
 
          ang_pierna.Clear();
          ang_pierna.AppendText(angulo.ToString());
