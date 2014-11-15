@@ -167,6 +167,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
+
+        MovimientoBrazo mov = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
+
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
         /// </summary>
@@ -199,9 +202,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                        List<double> vec = this.movimientoPierna(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], dc);
-
+                       mov.actualizar(skel);
+                       mov.detectar();
+                       
                        ang_pierna.Clear();
-                       ang_pierna.AppendText(vec[0].ToString());
+                       ang_pierna.AppendText(/*vec[0].ToString()*/mov.getEstado().ToString());
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
