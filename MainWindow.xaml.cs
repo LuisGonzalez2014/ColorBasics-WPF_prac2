@@ -13,6 +13,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -197,8 +198,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       //this.prueba(skel, dc);
-                       this.movimientoPierna(skel,0,dc);
+                       List<double> vec = this.movimientoPierna(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], dc);
+
+                       ang_pierna.Clear();
+                       ang_pierna.AppendText(vec[0].ToString());
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {

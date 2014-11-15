@@ -1,4 +1,10 @@
-﻿namespace Microsoft.Samples.Kinect.ColorBasics
+﻿//---------------------------------------------------------------------------------
+// <copyright file="ejercicio_fitness.cs"
+//      autor="Luis Alejandro González Borrás y José Manuel Gómez González">
+// </copyright>
+//---------------------------------------------------------------------------------
+
+namespace Microsoft.Samples.Kinect.ColorBasics
 {
     using System;
     using System.Globalization;
@@ -14,40 +20,38 @@
     /// </summary>
    public partial class MainWindow : Window
    {
-      bool fijo = false;
-      Joint pecho;
-
-      Joint cadera, rodilla;
-
-      public void prueba(Skeleton skel, DrawingContext dc)
-      {
-         if (!fijo)
-         {
-            pecho = skel.Joints[JointType.ShoulderCenter];
-            fijo = true;
-         }
-         dc.DrawEllipse(Brushes.Aqua, null, this.SkeletonPointToScreen(pecho.Position), 5, 5);
-         // prevent drawing outside of our render area
-         this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-      }
-
-      // Calcula el modulo del vector
+      /// <summary>
+      /// Calcula el modulo del vector
+      /// </summary>
+      /// <param name="vector">vector</param>
+      /// <returns>módulo del vector</returns>
       public double modulo(SkeletonPoint vector)
       {
          return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
       }
 
-      // Calcula el producto escalar de los vectores a y b
+      /// <summary>
+      /// Calcula el producto escalar de los vectores a y b
+      /// </summary>
+      /// <param name="a">punto en el espacio</param>
+      /// <param name="b">punto en el espacio</param>
+      /// <returns>producto escalar</returns>
       public double producto_escalar(SkeletonPoint a, SkeletonPoint b)
       {
          return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
       }
 
-      // Calcula y devuelve por referencia unos valores esenciales para la deteccion de movimientos:
-      // angulo entre el vector base_inicial (vector desde punto_base a punto_inicial) y el vector
-      // base_actual (vector desde punto_base a punto_actual); diferencia_X como valor absoluto de la
-      // diferencia entre la componente X de punto_actual y punto_inicial; diferencia_Z como la
-      // diferencia entre la componente Z de punto_actual y punto_inicial.
+      /// <summary>
+      /// Calcula y devuelve por referencia unos valores esenciales para la deteccion de movimientos
+      /// </summary>
+      /// <param name="punto_base">punto base</param>
+      /// <param name="punto_inicial">punto inicial</param>
+      /// <param name="punto_actual">punto actual</param>
+      /// <param name="angulo">angulo entre el vector base_inicial (vector desde punto_base a punto_inicial) y el vector 
+      /// base_actual (vector desde punto_base a punto_actual)</param>
+      /// <param name="diferencia_X">diferencia_X como valor absoluto de la diferencia entre la componente X de punto_actual
+      /// y punto_inicial</param>
+      /// <param name="diferencia_Z">diferencia_Z como la diferencia entre la componente Z de punto_actual y punto_inicial</param>
       public void valores_base(SkeletonPoint punto_base, SkeletonPoint punto_inicial, SkeletonPoint punto_actual,
           out double angulo, out double diferencia_X, out double diferencia_Z)
       {
@@ -67,30 +71,27 @@
          diferencia_Z = punto_actual.Z - punto_inicial.Z;
       }
 
-      // Devuelve en vector[0] el ángulo de la pierna y en vector[1] el valor de la coordenada x de la rodilla
-      public List<double> movimientoPierna(Skeleton skel, int cad, DrawingContext dc)
+
+      bool capturada = false;
+      Joint cadera, rodilla;
+
+      /// <summary>
+      /// Devuelve el ángulo que forma la pierna al elevar la rodilla y el desplazamiento de ésta
+      /// en el eje X
+      /// </summary>
+      /// <param name="cadera_actual">punto de la cadera en el frame actual</param>
+      /// <param name="rodilla_actual">punto de la rodilla en el frame actual</param>
+      /// <param name="dc">drawing context</param>
+      /// <returns>vector con dos elementos: [0]: ángulo, [1]: desplazamiento en X de la rodilla</returns>
+      public List<double> movimientoPierna(Joint cadera_actual, Joint rodilla_actual, DrawingContext dc)
       {
          List<double> vector = new List<double>();
 
-         Joint rodilla_actual, cadera_actual;
-
-         if (cad == 0)   // Si cadera derecha
-         {
-            cadera_actual = skel.Joints[JointType.HipRight];
-            rodilla_actual = skel.Joints[JointType.KneeRight];
-         }
-         else   // Si cadera izquierda
-         {
-            cadera_actual = skel.Joints[JointType.HipLeft];
-            rodilla_actual = skel.Joints[JointType.KneeLeft];
-         }
-
-         
-         if (!fijo)
+         if (!capturada)
          {
             cadera = cadera_actual;
             rodilla = rodilla_actual;
-            fijo = true;
+            capturada = true;
          }
 
          double angulo, a, b;
@@ -98,36 +99,85 @@
          vector.Add(angulo);
          vector.Add(rodilla_actual.Position.X);
 
-         Brush color_1 = Brushes.Yellow;
-         Brush color_2 = Brushes.GreenYellow;
-         Brush color_3 = Brushes.Blue;
-         Brush color_4 = Brushes.LightGray;
-         
-         // QUITAR EN VERSIÓN FINAL
-         SkeletonPoint punto_cadera = cadera.Position;
-         SkeletonPoint punto_rodilla = rodilla.Position;
-         SkeletonPoint punto_1 = cadera.Position;
-         SkeletonPoint punto_2 = cadera.Position;
-         SkeletonPoint punto_3 = cadera.Position;
-
-         punto_2.X = (cadera.Position.X + rodilla.Position.X) / 2;
-         punto_2.Y = (cadera.Position.Y + rodilla.Position.Y) / 2;
-         punto_1.X = (cadera.Position.X + rodilla.Position.X) / 2;
-         punto_1.Y = (cadera.Position.Y + punto_2.Y) / 2;
-         punto_3.X = (cadera.Position.X + rodilla.Position.X) / 2;
-         punto_3.Y = (punto_2.Y + rodilla.Position.Y) / 2;
-
-
-         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_cadera), 10, 5);
-         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-         dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_rodilla), 10, 5);
-
-         ang_pierna.Clear();
-         ang_pierna.AppendText(angulo.ToString());
+         this.dibujarPuntos(cadera_actual, rodilla_actual, dc);
 
          return vector;
+      }
+
+      /// <summary>
+      /// Dibuja en pantalla cinco puntos para la realización del movimiento
+      /// </summary>
+      /// <param name="punto_A">punto 1 detectado</param>
+      /// <param name="punto_B">punto 2 detectado</param>
+      /// <param name="dc">drawing context</param>
+      public void dibujarPuntos(Joint punto_A, Joint punto_B, DrawingContext dc)
+      {
+         // Paleta de colores para la retroalimentación del usuario
+         Brush color_1 = Brushes.LightGray;
+         Brush color_2 = Brushes.GreenYellow;
+         Brush color_3 = Brushes.Red;
+
+         SkeletonPoint punto_1 = punto_A.Position;
+         if (punto_A.JointType == JointType.HipRight || punto_A.JointType == JointType.ShoulderRight)
+            punto_1.X += 0.2f;  // Desplazamiento hacia la derecha de la cadera
+         else
+            punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda de la cadera
+
+         SkeletonPoint punto_5 = punto_1, punto_2 = punto_1, punto_3 = punto_1, punto_4 = punto_1;
+
+         if (punto_A.JointType == JointType.HipRight || punto_A.JointType == JointType.HipLeft)
+         {
+            punto_5.Y = punto_1.Y + (rodilla.Position.Y - cadera.Position.Y);
+         }
+/*         else if (punto_A.JointType == JointType.ShoulderRight || punto_A.JointType == JointType.ShoulderLeft)
+         {
+            punto_5.Y = punto_1.Y + (muñeca_inicial.Position.Y - hombro_inicial.Position.Y);
+         }
+*/
+         punto_3.Y = (punto_1.Y + punto_5.Y) / 2;
+         punto_2.Y = (punto_1.Y + punto_3.Y) / 2;
+         punto_4.Y = (punto_3.Y + punto_5.Y) / 2;
+
+         if (punto_B.Position.Y <= punto_4.Y)
+         {
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_4), 10, 5);
+            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+         }
+         else if (punto_B.Position.Y < punto_3.Y)
+         {
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_4), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+         }
+         else if (punto_B.Position.Y < punto_2.Y)
+         {
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+         }
+         else if (punto_B.Position.Y < punto_1.Y)
+         {
+            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+         }
+         else if (punto_B.Position.Y >= punto_1.Y)
+         {
+            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_1), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_2), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
+            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+         }
       }
    }
 }
