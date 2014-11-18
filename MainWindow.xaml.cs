@@ -13,6 +13,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -127,11 +128,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     this.sensor = null;
                 }
             }
-
-            if (null == this.sensor)
-            {
-                this.statusBarText.Text = Properties.Resources.NoKinectReady;
-            }
         }
 
         /// <summary>
@@ -171,6 +167,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
+
+        MovimientoBrazo mov = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
+
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
         /// </summary>
@@ -202,7 +201,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       this.prueba(skel, dc);
+                       List<double> vec = this.movimientoPierna(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], dc);
+                       mov.actualizar(skel);
+                       mov.detectar();
+                       
+                       ang_pierna.Clear();
+                       ang_pierna.AppendText(/*vec[0].ToString()*/mov.getEstado().ToString());
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
@@ -238,7 +242,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         {
             if (null == this.sensor)
             {
-                this.statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
                 return;
             }
 
@@ -261,12 +264,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 {
                     encoder.Save(fs);
                 }
-
-                this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteSuccess, path);
             }
             catch (IOException)
             {
-                this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
+                //this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
             }
         }
     }
