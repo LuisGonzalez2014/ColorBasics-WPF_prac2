@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Microsoft.Samples.Kinect.ColorBasics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Color Basics" Height="618" Width="954" Loaded="WindowLoaded" Closing="WindowClosing">
+    Title="Color Basics" Height="688" Width="954" Loaded="WindowLoaded" Closing="WindowClosing">
 
     <Window.Resources>
         <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e"/>
@@ -36,7 +36,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Name="layoutGrid" Margin="10 0 10 0" Height="575">
+    <Grid Name="layoutGrid" Margin="10 0 10 0" Height="628">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -48,14 +48,15 @@
             <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18">Ejercicio Fitness</TextBlock>
             <Image Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5"/>
         </DockPanel>
-        <Viewbox Grid.Row="1" Stretch="Uniform" Margin="8,0,242,12">
+        <Viewbox Grid.Row="1" Stretch="Uniform" Margin="8,51,242,12">
             <Image Name="Camara" Width="640" Height="480"/>
         </Viewbox>
-        <Viewbox Grid.Row="1" Stretch="Uniform" Margin="8,0,242,12">
+        <Viewbox Grid.Row="1" Stretch="Uniform" Margin="8,51,242,12">
             <Image Name="Indicaciones" Width="640" Height="480"/>
         </Viewbox>
         <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}"></StatusBar>
         <TextBox FontSize="18" Height="33" HorizontalAlignment="Left" Margin="712,218,0,0" Name="ang_pierna" VerticalAlignment="Top" Width="157" Grid.Row="1" />
         <Label Content="ÁNGULO PIERNA" FontSize="18" Height="38" HorizontalAlignment="Left" Margin="712,174,0,0" Name="label1" VerticalAlignment="Top" Width="157" Grid.Row="1" />
+        <TextBlock Height="38" FontSize="26" HorizontalAlignment="Center" Margin="46,66,286,524" Name="sms_block" VerticalAlignment="Center" Width="580" Grid.RowSpan="2" />
     </Grid>
 </Window>

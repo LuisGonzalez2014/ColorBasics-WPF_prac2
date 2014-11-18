@@ -201,16 +201,19 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       List<double> vec = this.movimientoPierna(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], dc);
                        mov.actualizar(skel);
                        mov.detectar();
-                       
+
+                       MovimientoPierna mov_pierna = new MovimientoPierna();
+                       mov_pierna.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
+                       sms_block.Text = mov_pierna.getMessageError();
+
                        ang_pierna.Clear();
-                       ang_pierna.AppendText(/*vec[0].ToString()*/mov.getEstado().ToString());
+                       ang_pierna.AppendText(mov.getEstado().ToString());
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
-                       // MENSAJE ERROR
+                       sms_block.Text = "Colóquese un poco más hacia atrás.";
                     }
                  }
               }
