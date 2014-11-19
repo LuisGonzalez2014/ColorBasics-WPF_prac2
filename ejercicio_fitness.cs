@@ -244,6 +244,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
           private JointType wrist_type;
           private JointType shoulder_type;
+          private double angulo_objetivo;
           private ESTADO estado;
 
           private int contador_puntos;
@@ -257,11 +258,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
           private double error_medio_angulo;
           private double error_medio_X;
           private double error_medio_Z;
-
-          public MovimientoBrazo(JointType wrist, JointType shoulder, int puntos_calibracion = 25)
+          private double offset_perc;
+          private double offset_dim;
+          private double offset_angulo;
+          
+          public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo=70.0, double offset_perc = 0.1, int puntos_calibracion = 60)
           {
               this.wrist_type = wrist;
               this.shoulder_type = shoulder;
+              this.angulo_objetivo = angulo;
               this.estado = ESTADO.CALIBRAR;
               this.contador_puntos = 0;
               this.puntos_calibracion = puntos_calibracion;
@@ -275,6 +280,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               this.error_medio_angulo = 0;
               this.error_medio_X = 0;
               this.error_medio_Z = 0;
+              this.offset_dim = 0;
+              this.offset_angulo = 0;
+              this.offset_perc = offset_perc;
           }
 
           public void actualizar(Skeleton skel)
@@ -298,7 +306,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   }
                   else
                   {
-                      SkeletonPoint prediccion_error = new SkeletonPoint();
+                      SkeletonPoint wrist_with_error = new SkeletonPoint();
+                      SkeletonPoint vector_brazo = new SkeletonPoint();
+                      SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
 
                       foreach (SkeletonPoint punto in l_puntos_calibracion)
                       {
@@ -306,11 +316,20 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           error_medio.Y += Math.Abs(punto.Y - initial_shoulder.Y) / (float) puntos_calibracion;
                           error_medio.Z += Math.Abs(punto.Z - initial_shoulder.Z) / (float) puntos_calibracion;
                       }
-                      prediccion_error.X = initial_wrist.X + error_medio.X;
-                      prediccion_error.Y = initial_wrist.Y + error_medio.Y;
-                      prediccion_error.Z = initial_wrist.Z + error_medio.Z;
-                      valores_base(initial_shoulder, initial_wrist, prediccion_error, out error_medio_angulo, 
+                      wrist_with_error.X = initial_wrist.X + error_medio.X;
+                      wrist_with_error.Y = initial_wrist.Y + error_medio.Y;
+                      wrist_with_error.Z = initial_wrist.Z + error_medio.Z;
+                      valores_base(initial_shoulder, initial_wrist, wrist_with_error, out error_medio_angulo, 
                           out error_medio_X, out error_medio_Z);
+                      vector_brazo.X = initial_wrist.X - initial_shoulder.X;
+                      vector_brazo.Y = initial_wrist.Y - initial_shoulder.Y;
+                      vector_brazo.Z = initial_wrist.Z - initial_shoulder.Z;
+                      offset_dim = offset_perc * modulo(vector_brazo);
+                      wrist_with_Z_offset = initial_wrist;
+                      wrist_with_Z_offset.Z += (float) offset_dim;
+                      valores_base(initial_shoulder, initial_wrist, wrist_with_Z_offset, out offset_angulo, 
+                          out diferencia_X, out diferencia_Z);
+
                       estado = ESTADO.PREPARADO;
                   }
               }
@@ -318,15 +337,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               {
                   valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
 
-                  if (diferencia_X > (2 * error_medio_X))
+                  if (diferencia_X > (2 * error_medio_X + offset_dim))
                   {
                       estado = ESTADO.ERROR_MARGEN_X;
                   }
-                  else if (diferencia_Z < (2 * error_medio_Z))
+                  else if (diferencia_Z > (2 * error_medio_Z + offset_dim))
                   {
                       estado = ESTADO.ERROR_MARGEN_Z;
                   }
-                  else if (angulo > (70.0 - error_medio_angulo) && angulo < (70.0 + error_medio_angulo))
+                  else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < angulo  && angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.HACIA_ABAJO;
                   }
@@ -335,15 +354,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               {
                   valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
 
-                  if (diferencia_X > (2 * error_medio_X))
+                  if (diferencia_X > (2 * error_medio_X + offset_dim))
                   {
                       estado = ESTADO.ERROR_MARGEN_X;
                   }
-                  else if (angulo >= (70.0 + error_medio_angulo))
+                  else if (angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.ERROR_MARGEN_Z;
                   }
-                  else if (angulo > (0.0 - error_medio_angulo) && angulo < (0.0 + error_medio_angulo))
+                  else if (angulo < (error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.COMPLETADO;
                   }
