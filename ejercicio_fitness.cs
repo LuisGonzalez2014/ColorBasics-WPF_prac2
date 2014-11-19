@@ -20,85 +20,141 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     /// </summary>
    public partial class MainWindow : Window
    {
-      /// <summary>
-      /// Dibuja en pantalla cinco puntos para la realización del movimiento
-      /// </summary>
-      /// <param name="punto_A">punto 1 detectado</param>
-      /// <param name="punto_B">punto 2 detectado</param>
-      /// <param name="dc">drawing context</param>
-      public void dibujarPuntos(Joint punto_A, Joint punto_B, DrawingContext dc)
+      public class Indicador
       {
-         // Paleta de colores para la retroalimentación del usuario
-         Brush color_1 = Brushes.LightGray;
-         Brush color_2 = Brushes.GreenYellow;
-         Brush color_3 = Brushes.Red;
+         private DrawingContext dc;
+         private Joint A_initial, B_initial, A_actual, B_actual;
+         private int num_puntos;
+         private Brush color_1;
+         private Brush color_2;
+         private Brush color_3;
+         MainWindow main_window;
 
-         SkeletonPoint punto_1 = punto_A.Position;
-         if (punto_A.JointType == JointType.HipRight || punto_A.JointType == JointType.ShoulderRight)
-            punto_1.X += 0.2f;  // Desplazamiento hacia la derecha de la cadera
-         else
-            punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda de la cadera
+         public Indicador(int num, DrawingContext drco, Joint A_ini, Joint B_ini, Joint A_act, Joint B_act, MainWindow mw)
+         {
+            this.num_puntos = num;
+            this.dc = drco;
+            this.A_initial = A_ini;
+            this.B_initial = B_ini;
+            this.A_actual = A_act;
+            this.B_actual = B_act;
+            this.color_1 = Brushes.LightGray;
+            this.color_2 = Brushes.GreenYellow;
+            this.color_3 = Brushes.Red;
+            this.main_window = mw;
+         }
 
-         SkeletonPoint punto_5 = punto_1, punto_2 = punto_1, punto_3 = punto_1, punto_4 = punto_1;
+         // Métodos consultores
+         public Joint getAinitial()
+         {
+            return this.A_initial;
+         }
 
-         if (punto_A.JointType == JointType.HipRight || punto_A.JointType == JointType.HipLeft)
+         public Joint getBinitial()
          {
-            punto_5.Y = punto_1.Y + (rodilla.Position.Y - cadera.Position.Y);
+            return this.B_initial;
          }
-/*         else if (punto_A.JointType == JointType.ShoulderRight || punto_A.JointType == JointType.ShoulderLeft)
-         {
-            punto_5.Y = punto_1.Y + (muñeca_inicial.Position.Y - hombro_inicial.Position.Y);
-         }
-*/
-         punto_3.Y = (punto_1.Y + punto_5.Y) / 2;
-         punto_2.Y = (punto_1.Y + punto_3.Y) / 2;
-         punto_4.Y = (punto_3.Y + punto_5.Y) / 2;
 
-         if (punto_B.Position.Y <= punto_4.Y)
+         public Joint getAactual()
          {
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_4), 10, 5);
-            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+            return this.A_actual;
          }
-         else if (punto_B.Position.Y < punto_3.Y)
+
+         public Joint getBactual()
          {
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_4), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+            return this.B_actual;
          }
-         else if (punto_B.Position.Y < punto_2.Y)
+
+         public int getNumPuntos()
          {
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+            return this.num_puntos;
          }
-         else if (punto_B.Position.Y < punto_1.Y)
+
+         // Métodos modificadores
+
+         public void setAinitial(Joint A_ini)
          {
-            dc.DrawEllipse(color_1, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+            this.A_initial = A_ini;
          }
-         else if (punto_B.Position.Y >= punto_1.Y)
+
+         public void setBinitial(Joint B_ini)
          {
-            dc.DrawEllipse(color_3, null, this.SkeletonPointToScreen(punto_1), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_2), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_3), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_4), 10, 5);
-            dc.DrawEllipse(color_2, null, this.SkeletonPointToScreen(punto_5), 10, 5);
+            this.B_initial = B_ini;
+         }
+
+         public void setAactual(Joint A_act)
+         {
+            this.A_actual = A_act;
+         }
+
+         public void setBactual(Joint B_act)
+         {
+            this.B_actual = B_act;
+         }
+
+         /// <summary>
+         /// Dibuja en pantalla cinco puntos para la realización del movimiento
+         /// </summary>
+         /// <param name="punto_A">punto 1 detectado</param>
+         /// <param name="punto_B">punto 2 detectado</param>
+         /// <param name="dc">drawing context</param>
+         public void dibujarPuntos()
+         {
+            SkeletonPoint punto_1 = this.getAactual().Position;
+            if (this.getAactual().JointType == JointType.HipRight || this.getAactual().JointType == JointType.ShoulderRight)
+               punto_1.X += 0.2f;  // Desplazamiento hacia la derecha
+            else
+               punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda
+
+            SkeletonPoint punto_5 = punto_1, punto_2 = punto_1, punto_3 = punto_1, punto_4 = punto_1;
+
+            punto_5.Y = punto_1.Y + (this.getBinitial().Position.Y - this.getAinitial().Position.Y);
+            punto_3.Y = (punto_1.Y + punto_5.Y) / 2;
+            punto_2.Y = (punto_1.Y + punto_3.Y) / 2;
+            punto_4.Y = (punto_3.Y + punto_5.Y) / 2;
+
+            if (this.getBactual().Position.Y <= punto_4.Y)
+            {
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
+               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
+            else if (this.getBactual().Position.Y < punto_3.Y)
+            {
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
+               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
+            else if (this.getBactual().Position.Y < punto_2.Y)
+            {
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
+               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
+            else if (this.getBactual().Position.Y < punto_1.Y)
+            {
+               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
+               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
+            else if (this.getBactual().Position.Y >= punto_1.Y)
+            {
+               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
+               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
          }
       }
-
-      /*
-       **************** DESARROLLO DE CHEMA
-       */
 
       public class Movimiento
       {

@@ -169,6 +169,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
 
         MovimientoBrazo mov = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
+        MovimientoPierna mov_pierna = new MovimientoPierna();
 
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
@@ -204,10 +205,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        mov.actualizar(skel);
                        mov.detectar();
 
-                       MovimientoPierna mov_pierna = new MovimientoPierna();
                        mov_pierna.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
                        sms_block.Text = mov_pierna.getMessageError();
 
+                       Indicador barra_p = new Indicador(5, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
+                                      skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                    //   Indicador barra_b = new Indicador(5, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
+                    //                  skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                       barra_p.dibujarPuntos();
+                    //   barra_b.dibujarPuntos();
+                       
                        ang_pierna.Clear();
                        ang_pierna.AppendText(mov.getEstado().ToString());
                     }
