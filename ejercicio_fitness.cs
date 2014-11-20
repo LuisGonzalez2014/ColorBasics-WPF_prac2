@@ -32,7 +32,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          public Indicador(int num, DrawingContext drco, Joint A_ini, Joint B_ini, Joint A_act, Joint B_act, MainWindow mw)
          {
-            this.num_puntos = num;
+            this.num_puntos = ((num<3) ? 2 : num);
             this.dc = drco;
             this.A_initial = A_ini;
             this.B_initial = B_ini;
@@ -152,6 +152,50 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
                dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
                dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
+            }
+         }
+
+         public void dibujarPuntos_2()
+         {
+            float dist = (this.getBinitial().Position.Y - this.getAinitial().Position.Y) / this.getNumPuntos();
+
+            SkeletonPoint punto_1 = this.getAactual().Position;
+            if (this.getAactual().JointType == JointType.HipRight || this.getAactual().JointType == JointType.ShoulderRight)
+               punto_1.X += 0.2f;  // Desplazamiento hacia la derecha
+            else
+               punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda
+
+            List<SkeletonPoint> puntos = new List<SkeletonPoint>();
+            for (int i = 0; i < this.getNumPuntos(); i++)
+            {
+               SkeletonPoint punto = punto_1;
+               punto.Y += dist * i;
+               puntos.Add(punto);
+            }
+            
+            for (int i = 0; i < this.getNumPuntos(); i++)
+            {
+               float pos_Y = this.getBactual().Position.Y;
+
+               if (pos_Y < puntos[i].Y)
+               {
+                  dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(puntos[i]), 10, 5);
+               }
+               else
+               {
+                  if ((i > 0 && pos_Y >= puntos[i].Y && pos_Y < puntos[i - 1].Y) || (i == 0 && pos_Y >= puntos[i].Y))
+                  {
+                     dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(puntos[i]), 10, 5);
+                  }
+
+                  if (i < this.getNumPuntos()-1)
+                  {
+                     if (pos_Y >= puntos[i].Y && pos_Y >= puntos[i + 1].Y)
+                     {
+                        dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(puntos[i + 1]), 10, 5);
+                     }
+                  }
+               }
             }
          }
       }

@@ -199,7 +199,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               {
                  foreach (Skeleton skel in skeletons)
                  {
-
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                        mov.actualizar(skel);
@@ -212,7 +211,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                     //   Indicador barra_b = new Indicador(5, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                     //                  skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
-                       barra_p.dibujarPuntos();
+                       barra_p.dibujarPuntos_2();
                     //   barra_b.dibujarPuntos();
                        
                        ang_pierna.Clear();
