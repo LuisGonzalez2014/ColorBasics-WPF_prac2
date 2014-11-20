@@ -93,69 +93,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          /// <summary>
-         /// Dibuja en pantalla cinco puntos para la realización del movimiento
+         /// Dibuja en pantalla una barra de indicadores de la realización del movimiento
          /// </summary>
-         /// <param name="punto_A">punto 1 detectado</param>
-         /// <param name="punto_B">punto 2 detectado</param>
-         /// <param name="dc">drawing context</param>
          public void dibujarPuntos()
-         {
-            SkeletonPoint punto_1 = this.getAactual().Position;
-            if (this.getAactual().JointType == JointType.HipRight || this.getAactual().JointType == JointType.ShoulderRight)
-               punto_1.X += 0.2f;  // Desplazamiento hacia la derecha
-            else
-               punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda
-
-            SkeletonPoint punto_5 = punto_1, punto_2 = punto_1, punto_3 = punto_1, punto_4 = punto_1;
-
-            punto_5.Y = punto_1.Y + (this.getBinitial().Position.Y - this.getAinitial().Position.Y);
-            punto_3.Y = (punto_1.Y + punto_5.Y) / 2;
-            punto_2.Y = (punto_1.Y + punto_3.Y) / 2;
-            punto_4.Y = (punto_3.Y + punto_5.Y) / 2;
-
-            if (this.getBactual().Position.Y <= punto_4.Y)
-            {
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
-               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
-            }
-            else if (this.getBactual().Position.Y < punto_3.Y)
-            {
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
-               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
-            }
-            else if (this.getBactual().Position.Y < punto_2.Y)
-            {
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
-               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
-            }
-            else if (this.getBactual().Position.Y < punto_1.Y)
-            {
-               dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
-               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
-            }
-            else if (this.getBactual().Position.Y >= punto_1.Y)
-            {
-               dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto_1), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_2), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_3), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_4), 10, 5);
-               dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(punto_5), 10, 5);
-            }
-         }
-
-         public void dibujarPuntos_2()
          {
             float dist = (this.getBinitial().Position.Y - this.getAinitial().Position.Y) / this.getNumPuntos();
 
@@ -188,12 +128,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                      dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(puntos[i]), 10, 5);
                   }
 
-                  if (i < this.getNumPuntos()-1)
+                  if ((i < this.getNumPuntos()-1) && (pos_Y >= puntos[i].Y && pos_Y >= puntos[i + 1].Y))
                   {
-                     if (pos_Y >= puntos[i].Y && pos_Y >= puntos[i + 1].Y)
-                     {
-                        dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(puntos[i + 1]), 10, 5);
-                     }
+                     dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(puntos[i + 1]), 10, 5);
                   }
                }
             }
