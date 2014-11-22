@@ -207,11 +207,14 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        mov_pierna.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
                        sms_block.Text = mov_pierna.getMessageError();
 
-                       Indicador barra_p = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
+                       Indicador barra_pder = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                       Indicador barra_pizq = new Indicador(10, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
+                                      skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
                     //   Indicador barra_b = new Indicador(5, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                     //                  skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
-                       barra_p.dibujarPuntos();
+                       barra_pder.dibujarPuntos();
+                       barra_pizq.dibujarPuntos();
                     //   barra_b.dibujarPuntos();
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)

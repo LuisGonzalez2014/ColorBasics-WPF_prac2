@@ -105,32 +105,29 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             else
                punto_1.X -= 0.2f;  // Desplazamiento hacia la izquierda
 
-            List<SkeletonPoint> puntos = new List<SkeletonPoint>();
             for (int i = 0; i < this.getNumPuntos(); i++)
             {
-               SkeletonPoint punto = punto_1;
+               SkeletonPoint punto = punto_1, panterior = punto_1, psiguiente = punto_1;
                punto.Y += dist * i;
-               puntos.Add(punto);
-            }
-            
-            for (int i = 0; i < this.getNumPuntos(); i++)
-            {
+
                float pos_Y = this.getBactual().Position.Y;
 
-               if (pos_Y < puntos[i].Y)
+               if (pos_Y < punto.Y)
                {
-                  dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(puntos[i]), 10, 5);
+                  dc.DrawEllipse(color_1, null, this.main_window.SkeletonPointToScreen(punto), 10, 5);
                }
                else
                {
-                  if ((i > 0 && pos_Y >= puntos[i].Y && pos_Y < puntos[i - 1].Y) || (i == 0 && pos_Y >= puntos[i].Y))
+                  panterior.Y = punto.Y - dist;
+                  if ((i > 0 && pos_Y >= punto.Y && pos_Y < panterior.Y) || (i == 0 && pos_Y >= punto.Y))
                   {
-                     dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(puntos[i]), 10, 5);
+                     dc.DrawEllipse(color_3, null, this.main_window.SkeletonPointToScreen(punto), 10, 5);
                   }
 
-                  if ((i < this.getNumPuntos()-1) && (pos_Y >= puntos[i].Y && pos_Y >= puntos[i + 1].Y))
+                  psiguiente.Y = punto.Y + dist;
+                  if ((i < this.getNumPuntos() - 1) && (pos_Y >= punto.Y && pos_Y >= psiguiente.Y))
                   {
-                     dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(puntos[i + 1]), 10, 5);
+                     dc.DrawEllipse(color_2, null, this.main_window.SkeletonPointToScreen(psiguiente), 10, 5);
                   }
                }
             }
