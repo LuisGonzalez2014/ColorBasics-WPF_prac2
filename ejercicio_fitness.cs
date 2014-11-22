@@ -32,7 +32,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          public Indicador(int num, DrawingContext drco, Joint A_ini, Joint B_ini, Joint A_act, Joint B_act, MainWindow mw)
          {
-            this.num_puntos = ((num<3) ? 2 : num);
+            this.num_puntos = ((num<3) ? 3 : num);
             this.dc = drco;
             this.A_initial = A_ini;
             this.B_initial = B_ini;
