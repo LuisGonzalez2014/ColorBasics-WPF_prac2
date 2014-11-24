@@ -71,7 +71,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          // Métodos modificadores
-
          public void setAinitial(Joint A_ini)
          {
             this.A_initial = A_ini;
@@ -93,7 +92,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          /// <summary>
-         /// Dibuja en pantalla una barra de indicadores de la realización del movimiento
+         /// Dibuja en pantalla una barra de indicadores para retroalimentación del movimiento
          /// </summary>
          public void dibujarPuntos()
          {
