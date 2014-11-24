@@ -359,6 +359,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
           private JointType wrist_type;
           private JointType shoulder_type;
           private double angulo_objetivo;
+          private double angulo;
           private ESTADO estado;
 
           private int contador_puntos;
@@ -381,6 +382,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               this.wrist_type = wrist;
               this.shoulder_type = shoulder;
               this.angulo_objetivo = angulo;
+              this.angulo = 0;
               this.estado = ESTADO.CALIBRAR;
               this.contador_puntos = 0;
               this.puntos_calibracion = puntos_calibracion;
@@ -399,11 +401,26 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               this.offset_perc = offset_perc;
           }
 
+          public double getAngulo()
+          {
+              return this.angulo;
+          }
+
+          public SkeletonPoint getShoulderPoint()
+          {
+              return this.initial_shoulder;
+          }
+
+          public SkeletonPoint getWristPoint()
+          {
+              return this.initial_wrist;
+          }
+
           public void actualizar(Skeleton skel)
           {
               SkeletonPoint wrist = skel.Joints[wrist_type].Position;
               SkeletonPoint shoulder = skel.Joints[shoulder_type].Position;
-              double angulo, diferencia_X, diferencia_Z;
+              double diferencia_X, diferencia_Z;
 
               if (estado == ESTADO.CALIBRAR)
               {
@@ -449,7 +466,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               }
               else if (estado == ESTADO.HACIA_ARRIBA)
               {
-                  valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
+                  valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
                   if (diferencia_X > (2 * error_medio_X + offset_dim))
                   {
@@ -459,24 +476,24 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   {
                       estado = ESTADO.ERROR_MARGEN_Z;
                   }
-                  else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < angulo  && angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
+                  else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo  && this.angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.HACIA_ABAJO;
                   }
               }
               else if (estado == ESTADO.HACIA_ABAJO)
               {
-                  valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
+                  valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
                   if (diferencia_X > (2 * error_medio_X + offset_dim))
                   {
                       estado = ESTADO.ERROR_MARGEN_X;
                   }
-                  else if (angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
+                  else if (this.angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.ERROR_MARGEN_Z;
                   }
-                  else if (angulo < (error_medio_angulo + offset_angulo / 2))
+                  else if (this.angulo < (error_medio_angulo + offset_angulo / 2))
                   {
                       estado = ESTADO.COMPLETADO;
                   }
