@@ -167,8 +167,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
-
-        MovimientoBrazo mov = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
         MovimientoPierna mov_pierna = new MovimientoPierna();
 
         /// <summary>
@@ -201,19 +199,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       /*
-                       mov.actualizar(skel);
-                       mov.detectar();
-
                        mov_pierna.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
                        sms_block.Text = mov_pierna.getMessageError();
 
                        Indicador barra_pder = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                        barra_pder.dibujarPuntos();
-                       */
-
-
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
