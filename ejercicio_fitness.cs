@@ -514,16 +514,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          private Joint hip_initial, knee_initial;
          private const double MIN_ANGULO = 5;
          private const double MAX_ANGULO = 70;
+         private double angle;
          private const double ERROR = 0.05;          // Se admite un error del 5%
          private const double DESPL_PERMITED = 4;    // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm.
-         private int repetitions;
          private String message_error;
          private ESTADO state;
 
          public MovimientoPierna()
          {
             this.state = ESTADO.INICIAL;
-            this.repetitions = 0;
             message_error = "Realice el movimiento como se le ha indicado.";
          }
 
@@ -538,11 +537,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             return this.knee_initial;
          }
 
-         public int getRepetitions()
-         {
-            return repetitions;
-         }
-
          public ESTADO getState()
          {
             return this.state;
@@ -551,6 +545,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public String getMessageError()
          {
             return this.message_error;
+         }
+
+         public double getAngle()
+         {
+            return this.angle;
          }
 
          // Métodos modificadores
@@ -564,11 +563,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             this.knee_initial = ini_knee;
          }
 
-         public void setRepetitions(int rep)
-         {
-            this.repetitions = rep;
-         }
-
          public void setState(ESTADO st)
          {
             this.state = st;
@@ -577,6 +571,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public void setMessageError(String sms)
          {
             this.message_error = sms;
+         }
+
+         public void setAngle(double alpha)
+         {
+            this.angle = alpha;
          }
 
          /// <summary>
@@ -593,6 +592,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                double angulo, dif_x, b;
                this.valores_base(this.getInitialHip().Position, this.getInitialKnee().Position, knee.Position, out angulo, out dif_x, out b);
+               this.setAngle(angulo);
 
                double ang_err_max = angulo + (angulo*ERROR);
                double ang_err_min = angulo - (angulo*ERROR);
@@ -608,7 +608,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                else if (MAX_ANGULO <= ang_err_max && this.getState() == ESTADO.MOVIMIENTO)
                {
                   this.setState(ESTADO.ALCANZADO);
-                  this.setRepetitions(this.getRepetitions() +1);
                }
                else if (MIN_ANGULO < ang_err_min && ang_err_max < MAX_ANGULO && this.getState() == ESTADO.ALCANZADO)
                {

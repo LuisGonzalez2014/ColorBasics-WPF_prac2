@@ -201,6 +201,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
+                       /*
                        mov.actualizar(skel);
                        mov.detectar();
 
@@ -209,9 +210,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                        Indicador barra_pder = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
-
                        barra_pder.dibujarPuntos();
-                       num_rep.Text = mov_pierna.getRepetitions().ToString();
+                       */
+
+
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {

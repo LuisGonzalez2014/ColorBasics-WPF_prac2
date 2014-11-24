@@ -55,8 +55,8 @@
             <Image Name="Indicaciones" Width="640" Height="480"/>
         </Viewbox>
         <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}"></StatusBar>
-        <Label Content="REP. RESTANTES:" FontSize="16" Height="32" HorizontalAlignment="Left" Margin="507,2,0,0" Name="label1" VerticalAlignment="Top" Width="130" Grid.Row="1" />
-        <TextBlock Height="34" FontSize="20" HorizontalAlignment="Center" Margin="8,0,181,527" Name="sms_block" VerticalAlignment="Center" Width="493" Grid.Row="1" />
-        <TextBlock Grid.Row="1" Height="34" FontSize="22" HorizontalAlignment="Left" Margin="633,0,0,0" Name="num_rep" VerticalAlignment="Top" Width="37" />
+        <Label Content="REP. RESTANTES:" FontSize="16" Height="32" HorizontalAlignment="Left" Margin="506,2,0,0" Name="label1" VerticalAlignment="Top" Width="130" Grid.Row="1" />
+        <TextBlock Height="34" FontSize="20" HorizontalAlignment="Center" Margin="8,0,191,527" Name="sms_block" VerticalAlignment="Center" Width="483" Grid.Row="1" />
+        <TextBlock Grid.Row="1" Height="34" FontSize="22" HorizontalAlignment="Right" Margin="0,0,12,0" Name="num_rep" VerticalAlignment="Top" Width="37" />
     </Grid>
 </Window>
