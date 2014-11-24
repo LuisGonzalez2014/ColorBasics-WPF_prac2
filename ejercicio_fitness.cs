@@ -497,7 +497,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
-               if (diferencia_X > (2 * error_medio_X + offset_dim))
+               if (diferencia_X > (2 * error_medio_X + offset_dim) && false)
                {
                   estado = ESTADO.ERROR_MARGEN_X;
                }
@@ -505,9 +505,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                {
                   estado = ESTADO.ERROR_MARGEN_Z;
                }
-               else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo && this.angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
+               else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo )
                {
-                  estado = ESTADO.HACIA_ABAJO;
+                  estado = ESTADO.COMPLETADO;
                }
             }
             else if (estado == ESTADO.HACIA_ABAJO)
@@ -563,13 +563,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          private double angle;
          private const double ERROR = 0.05;          // Se admite un error del 5%
          private const double DESPL_PERMITED = 4;    // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm.
-         private String message_error;
          private ESTADO state;
 
          public MovimientoPierna()
          {
             this.state = ESTADO.INICIAL;
-            message_error = "Realice el movimiento como se le ha indicado.";
+            //message_error = "Realice el movimiento como se le ha indicado.";
          }
 
          // Métodos consultores
@@ -586,11 +585,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public ESTADO getState()
          {
             return this.state;
-         }
-
-         public String getMessageError()
-         {
-            return this.message_error;
          }
 
          public double getAngle()
@@ -614,11 +608,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             this.state = st;
          }
 
-         public void setMessageError(String sms)
-         {
-            this.message_error = sms;
-         }
-
          public void setAngle(double alpha)
          {
             this.angle = alpha;
@@ -639,38 +628,25 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                double angulo, dif_x, b;
                this.valores_base(this.getInitialHip().Position, this.getInitialKnee().Position, knee.Position, out angulo, out dif_x, out b);
                this.setAngle(angulo);
-
+               /*
                double ang_err_max = angulo + (angulo*ERROR);
                double ang_err_min = angulo - (angulo*ERROR);
-
-               if (this.getState() == ESTADO.MOVIMIENTO && dif_x >= (DESPL_PERMITED*ERROR))
-               {
-                  this.setState(ESTADO.FAIL);
-               }
-               else if (MIN_ANGULO < ang_err_min && ang_err_max < MAX_ANGULO && this.getState() == ESTADO.REPOSO)
+               */
+               if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getState() == ESTADO.REPOSO)
                {
                   this.setState(ESTADO.MOVIMIENTO);
                }
-               else if (MAX_ANGULO <= ang_err_max && this.getState() == ESTADO.MOVIMIENTO)
+               else if (MAX_ANGULO <= angulo && this.getState() == ESTADO.MOVIMIENTO)
                {
                   this.setState(ESTADO.ALCANZADO);
                }
-               else if (MIN_ANGULO < ang_err_min && ang_err_max < MAX_ANGULO && this.getState() == ESTADO.ALCANZADO)
+               else if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getState() == ESTADO.ALCANZADO)
                {
                   this.setState(ESTADO.MOVIMIENTO);
                }
-               else if (ang_err_min <= MIN_ANGULO && this.getState() == ESTADO.MOVIMIENTO)
+               else if (angulo <= MIN_ANGULO && this.getState() == ESTADO.MOVIMIENTO)
                {
                   this.setState(ESTADO.REPOSO);
-               }
-               else if (this.getState() == ESTADO.FAIL)
-               {
-                  if (Posicion.IsAlignedBodyAndArms(skel) && (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
-                  {
-                     this.setState(ESTADO.INICIAL);
-                  }
-                  else
-                     this.setMessageError("Coloque el cuerpo en la posición de reposo.");
                }
                else if (this.getState() == ESTADO.INICIAL)
                {
