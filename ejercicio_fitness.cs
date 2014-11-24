@@ -20,17 +20,36 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     /// </summary>
    public partial class MainWindow : Window
    {
+      public class WriteableJoint
+      {
+         public SkeletonPoint Position;
+         public JointType JointType;
+
+         public WriteableJoint(Joint j)
+         {
+            this.Position = j.Position;
+            this.JointType = j.JointType;
+         }
+
+         public WriteableJoint(SkeletonPoint sp, JointType jt)
+         {
+            this.Position = sp;
+            this.JointType = jt;
+         }
+      }
+
       public class Indicador
       {
          private DrawingContext dc;
-         private Joint A_initial, B_initial, A_actual, B_actual;
+         private WriteableJoint A_initial, B_initial;
+         private Joint A_actual, B_actual;
          private int num_puntos;
          private Brush color_1;
          private Brush color_2;
          private Brush color_3;
          MainWindow main_window;
 
-         public Indicador(int num, DrawingContext drco, Joint A_ini, Joint B_ini, Joint A_act, Joint B_act, MainWindow mw)
+         public Indicador(int num, DrawingContext drco, WriteableJoint A_ini, WriteableJoint B_ini, Joint A_act, Joint B_act, MainWindow mw)
          {
             this.num_puntos = ((num<3) ? 3 : num);
             this.dc = drco;
@@ -45,12 +64,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          // Métodos consultores
-         public Joint getAinitial()
+         public WriteableJoint getAinitial()
          {
             return this.A_initial;
          }
 
-         public Joint getBinitial()
+         public WriteableJoint getBinitial()
          {
             return this.B_initial;
          }
@@ -71,12 +90,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          // Métodos modificadores
-         public void setAinitial(Joint A_ini)
+         public void setAinitial(WriteableJoint A_ini)
          {
             this.A_initial = A_ini;
          }
 
-         public void setBinitial(Joint B_ini)
+         public void setBinitial(WriteableJoint B_ini)
          {
             this.B_initial = B_ini;
          }
@@ -133,57 +152,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
       }
 
-      public class Movimiento
+      public class Posicion
       {
-         /// <summary>
-         /// Calcula el modulo del vector
-         /// </summary>
-         /// <param name="vector">vector</param>
-         /// <returns>módulo del vector</returns>
-         public double modulo(SkeletonPoint vector)
-         {   return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);   }
-
-         /// <summary>
-         /// Calcula el producto escalar de los vectores a y b
-         /// </summary>
-         /// <param name="a">punto en el espacio</param>
-         /// <param name="b">punto en el espacio</param>
-         /// <returns>producto escalar</returns>
-         public double producto_escalar(SkeletonPoint a, SkeletonPoint b)
-         {   return a.X * b.X + a.Y * b.Y + a.Z * b.Z;   }
-
-         /// <summary>
-         /// Calcula y devuelve por referencia unos valores esenciales para la deteccion de movimientos
-         /// </summary>
-         /// <param name="punto_base">punto base</param>
-         /// <param name="punto_inicial">punto inicial</param>
-         /// <param name="punto_actual">punto actual</param>
-         /// <param name="angulo">angulo entre el vector base_inicial (vector desde punto_base a punto_inicial) y el vector 
-         /// base_actual (vector desde punto_base a punto_actual)</param>
-         /// <param name="diferencia_X">diferencia_X como valor absoluto de la diferencia entre la componente X de punto_actual
-         /// y punto_inicial</param>
-         /// <param name="diferencia_Z">diferencia_Z como la diferencia entre la componente Z de punto_actual y punto_inicial</param>
-         public void valores_base(SkeletonPoint punto_base, SkeletonPoint punto_inicial, SkeletonPoint punto_actual,
-                                  out double angulo, out double diferencia_X, out double diferencia_Z)
-         {
-            SkeletonPoint vector_base_inicial = new SkeletonPoint();
-            SkeletonPoint vector_base_actual = new SkeletonPoint();
-
-            vector_base_inicial.X = punto_inicial.X - punto_base.X;
-            vector_base_inicial.Y = punto_inicial.Y - punto_base.Y;
-            vector_base_inicial.Z = punto_inicial.Z - punto_base.Z;
-            vector_base_actual.X = punto_actual.X - punto_base.X;
-            vector_base_actual.Y = punto_actual.Y - punto_base.Y;
-            vector_base_actual.Z = punto_actual.Z - punto_base.Z;
-
-            angulo = Math.Acos(producto_escalar(vector_base_inicial, vector_base_actual) /
-                     (modulo(vector_base_inicial) * modulo(vector_base_actual))) / Math.PI * 180.0;
-            diferencia_X = Math.Abs(punto_actual.X - punto_inicial.X);
-            diferencia_Z = punto_actual.Z - punto_inicial.Z;
-         }
-
          // boolean method that return true if body is completely aligned and arms are in a relaxed position
-         public bool IsAlignedBodyAndArms(Skeleton received)
+         public static bool IsAlignedBodyAndArms(Skeleton received)
          {
             double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
             double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
@@ -257,9 +229,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             else
                return false;
          }
-         
+
          //first position to be Tracked and Accepted
-         public bool AreFeetTogether(Skeleton received)
+         public static bool AreFeetTogether(Skeleton received)
          {
             foreach (Joint joint in received.Joints)
             {
@@ -302,9 +274,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }//close foreach
             return false;
          }//close method AreFeetTogether
-         
+
          //method for the second position feet separate between 60 degrees to be accepted
-         public bool AreFeetSeparate(Skeleton received)
+         public static bool AreFeetSeparate(Skeleton received)
          {
             foreach (Joint joint in received.Joints)
             {
@@ -352,159 +324,233 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }//close method AreFeetseparate
       }
 
+      public class Movimiento
+      {
+         /// <summary>
+         /// Calcula el modulo del vector
+         /// </summary>
+         /// <param name="vector">vector</param>
+         /// <returns>módulo del vector</returns>
+         public double modulo(SkeletonPoint vector)
+         {   return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);   }
+
+         /// <summary>
+         /// Calcula el producto escalar de los vectores a y b
+         /// </summary>
+         /// <param name="a">punto en el espacio</param>
+         /// <param name="b">punto en el espacio</param>
+         /// <returns>producto escalar</returns>
+         public double producto_escalar(SkeletonPoint a, SkeletonPoint b)
+         {   return a.X * b.X + a.Y * b.Y + a.Z * b.Z;   }
+
+         /// <summary>
+         /// Calcula y devuelve por referencia unos valores esenciales para la deteccion de movimientos
+         /// </summary>
+         /// <param name="punto_base">punto base</param>
+         /// <param name="punto_inicial">punto inicial</param>
+         /// <param name="punto_actual">punto actual</param>
+         /// <param name="angulo">angulo entre el vector base_inicial (vector desde punto_base a punto_inicial) y el vector 
+         /// base_actual (vector desde punto_base a punto_actual)</param>
+         /// <param name="diferencia_X">diferencia_X como valor absoluto de la diferencia entre la componente X de punto_actual
+         /// y punto_inicial</param>
+         /// <param name="diferencia_Z">diferencia_Z como la diferencia entre la componente Z de punto_actual y punto_inicial</param>
+         public void valores_base(SkeletonPoint punto_base, SkeletonPoint punto_inicial, SkeletonPoint punto_actual,
+                                  out double angulo, out double diferencia_X, out double diferencia_Z)
+         {
+            SkeletonPoint vector_base_inicial = new SkeletonPoint();
+            SkeletonPoint vector_base_actual = new SkeletonPoint();
+
+            vector_base_inicial.X = punto_inicial.X - punto_base.X;
+            vector_base_inicial.Y = punto_inicial.Y - punto_base.Y;
+            vector_base_inicial.Z = punto_inicial.Z - punto_base.Z;
+            vector_base_actual.X = punto_actual.X - punto_base.X;
+            vector_base_actual.Y = punto_actual.Y - punto_base.Y;
+            vector_base_actual.Z = punto_actual.Z - punto_base.Z;
+
+            angulo = Math.Acos(producto_escalar(vector_base_inicial, vector_base_actual) /
+                     (modulo(vector_base_inicial) * modulo(vector_base_actual))) / Math.PI * 180.0;
+            diferencia_X = Math.Abs(punto_actual.X - punto_inicial.X);
+            diferencia_Z = punto_actual.Z - punto_inicial.Z;
+         }
+      }
+
       public class MovimientoBrazo : Movimiento
       {
-          public enum ESTADO { CALIBRAR, PREPARADO, HACIA_ARRIBA, HACIA_ABAJO, COMPLETADO, ERROR_MARGEN_X, ERROR_MARGEN_Z }
+         public enum ESTADO { CALIBRAR, PREPARADO, HACIA_ARRIBA, HACIA_ABAJO, COMPLETADO, ERROR_MARGEN_X, ERROR_MARGEN_Z }
 
-          private JointType wrist_type;
-          private JointType shoulder_type;
-          private double angulo_objetivo;
-          private ESTADO estado;
+         private JointType wrist_type;
+         private JointType shoulder_type;
+         private double angulo_objetivo;
+         private double angulo;
+         private ESTADO estado;
 
-          private int contador_puntos;
-          private int puntos_calibracion;
-          private List<SkeletonPoint> l_puntos_calibracion;
+         private int contador_puntos;
+         private int puntos_calibracion;
+         private List<SkeletonPoint> l_puntos_calibracion;
 
-          private SkeletonPoint initial_wrist;
-          private SkeletonPoint initial_shoulder;
+         private SkeletonPoint initial_wrist;
+         private SkeletonPoint initial_shoulder;
 
-          private SkeletonPoint error_medio;
-          private double error_medio_angulo;
-          private double error_medio_X;
-          private double error_medio_Z;
-          private double offset_perc;
-          private double offset_dim;
-          private double offset_angulo;
-          
-          public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo=70.0, double offset_perc = 0.1, int puntos_calibracion = 60)
-          {
-              this.wrist_type = wrist;
-              this.shoulder_type = shoulder;
-              this.angulo_objetivo = angulo;
-              this.estado = ESTADO.CALIBRAR;
-              this.contador_puntos = 0;
-              this.puntos_calibracion = puntos_calibracion;
-              this.l_puntos_calibracion = new List<SkeletonPoint> ();
-              this.initial_wrist = new SkeletonPoint();
-              this.initial_wrist.X = this.initial_wrist.Y = this.initial_wrist.Z = 0;
-              this.initial_shoulder = new SkeletonPoint();
-              this.initial_shoulder.X = this.initial_shoulder.Y = this.initial_shoulder.Z = 0;
-              this.error_medio = new SkeletonPoint();
-              this.error_medio.X = this.error_medio.Y = this.error_medio.Z = 0;
-              this.error_medio_angulo = 0;
-              this.error_medio_X = 0;
-              this.error_medio_Z = 0;
-              this.offset_dim = 0;
-              this.offset_angulo = 0;
-              this.offset_perc = offset_perc;
-          }
+         private SkeletonPoint error_medio;
+         private double error_medio_angulo;
+         private double error_medio_X;
+         private double error_medio_Z;
+         private double offset_perc;
+         private double offset_dim;
+         private double offset_angulo;
 
-          public void actualizar(Skeleton skel)
-          {
-              SkeletonPoint wrist = skel.Joints[wrist_type].Position;
-              SkeletonPoint shoulder = skel.Joints[shoulder_type].Position;
-              double angulo, diferencia_X, diferencia_Z;
+         public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo = 70.0, double offset_perc = 0.1, int puntos_calibracion = 60)
+         {
+            this.wrist_type = wrist;
+            this.shoulder_type = shoulder;
+            this.angulo_objetivo = angulo;
+            this.angulo = 0;
+            this.estado = ESTADO.CALIBRAR;
+            this.contador_puntos = 0;
+            this.puntos_calibracion = puntos_calibracion;
+            this.l_puntos_calibracion = new List<SkeletonPoint>();
+            this.initial_wrist = new SkeletonPoint();
+            this.initial_wrist.X = this.initial_wrist.Y = this.initial_wrist.Z = 0;
+            this.initial_shoulder = new SkeletonPoint();
+            this.initial_shoulder.X = this.initial_shoulder.Y = this.initial_shoulder.Z = 0;
+            this.error_medio = new SkeletonPoint();
+            this.error_medio.X = this.error_medio.Y = this.error_medio.Z = 0;
+            this.error_medio_angulo = 0;
+            this.error_medio_X = 0;
+            this.error_medio_Z = 0;
+            this.offset_dim = 0;
+            this.offset_angulo = 0;
+            this.offset_perc = offset_perc;
+         }
 
-              if (estado == ESTADO.CALIBRAR)
-              {
-                  if (contador_puntos < puntos_calibracion)
+         public double getAngulo()
+         {
+            return this.angulo;
+         }
+
+         public WriteableJoint getShoulderPoint()
+         {
+            WriteableJoint j = new WriteableJoint(this.initial_shoulder, this.shoulder_type);
+            return j;
+         }
+
+         public WriteableJoint getWristPoint()
+         {
+            WriteableJoint j = new WriteableJoint(this.initial_wrist, this.wrist_type);
+            return j;
+         }
+
+         public void reset()
+         {
+            this.estado = ESTADO.CALIBRAR;
+         }
+
+         public void actualizar(Skeleton skel)
+         {
+            SkeletonPoint wrist = skel.Joints[wrist_type].Position;
+            SkeletonPoint shoulder = skel.Joints[shoulder_type].Position;
+            double diferencia_X, diferencia_Z;
+
+            if (estado == ESTADO.CALIBRAR)
+            {
+               if (contador_puntos < puntos_calibracion)
+               {
+                  initial_wrist.X += wrist.X / (float)puntos_calibracion;
+                  initial_wrist.Y += wrist.Y / (float)puntos_calibracion;
+                  initial_wrist.Z += wrist.Z / (float)puntos_calibracion;
+                  initial_shoulder.X += shoulder.X / (float)puntos_calibracion;
+                  initial_shoulder.Y += shoulder.Y / (float)puntos_calibracion;
+                  initial_shoulder.Z += shoulder.Z / (float)puntos_calibracion;
+                  l_puntos_calibracion.Add(shoulder);
+                  contador_puntos++;
+               }
+               else
+               {
+                  SkeletonPoint wrist_with_error = new SkeletonPoint();
+                  SkeletonPoint vector_brazo = new SkeletonPoint();
+                  SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
+
+                  foreach (SkeletonPoint punto in l_puntos_calibracion)
                   {
-                      initial_wrist.X += wrist.X / (float) puntos_calibracion;
-                      initial_wrist.Y += wrist.Y / (float) puntos_calibracion;
-                      initial_wrist.Z += wrist.Z / (float) puntos_calibracion;
-                      initial_shoulder.X += shoulder.X / (float) puntos_calibracion;
-                      initial_shoulder.Y += shoulder.Y / (float) puntos_calibracion;
-                      initial_shoulder.Z += shoulder.Z / (float) puntos_calibracion;
-                      l_puntos_calibracion.Add(shoulder);
-                      contador_puntos++;
+                     error_medio.X += Math.Abs(punto.X - initial_shoulder.X) / (float)puntos_calibracion;
+                     error_medio.Y += Math.Abs(punto.Y - initial_shoulder.Y) / (float)puntos_calibracion;
+                     error_medio.Z += Math.Abs(punto.Z - initial_shoulder.Z) / (float)puntos_calibracion;
                   }
-                  else
-                  {
-                      SkeletonPoint wrist_with_error = new SkeletonPoint();
-                      SkeletonPoint vector_brazo = new SkeletonPoint();
-                      SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
+                  wrist_with_error.X = initial_wrist.X + error_medio.X;
+                  wrist_with_error.Y = initial_wrist.Y + error_medio.Y;
+                  wrist_with_error.Z = initial_wrist.Z + error_medio.Z;
+                  valores_base(initial_shoulder, initial_wrist, wrist_with_error, out error_medio_angulo,
+                      out error_medio_X, out error_medio_Z);
+                  vector_brazo.X = initial_wrist.X - initial_shoulder.X;
+                  vector_brazo.Y = initial_wrist.Y - initial_shoulder.Y;
+                  vector_brazo.Z = initial_wrist.Z - initial_shoulder.Z;
+                  offset_dim = offset_perc * modulo(vector_brazo);
+                  wrist_with_Z_offset = initial_wrist;
+                  wrist_with_Z_offset.Z += (float)offset_dim;
+                  valores_base(initial_shoulder, initial_wrist, wrist_with_Z_offset, out offset_angulo,
+                      out diferencia_X, out diferencia_Z);
 
-                      foreach (SkeletonPoint punto in l_puntos_calibracion)
-                      {
-                          error_medio.X += Math.Abs(punto.X - initial_shoulder.X) / (float) puntos_calibracion;
-                          error_medio.Y += Math.Abs(punto.Y - initial_shoulder.Y) / (float) puntos_calibracion;
-                          error_medio.Z += Math.Abs(punto.Z - initial_shoulder.Z) / (float) puntos_calibracion;
-                      }
-                      wrist_with_error.X = initial_wrist.X + error_medio.X;
-                      wrist_with_error.Y = initial_wrist.Y + error_medio.Y;
-                      wrist_with_error.Z = initial_wrist.Z + error_medio.Z;
-                      valores_base(initial_shoulder, initial_wrist, wrist_with_error, out error_medio_angulo, 
-                          out error_medio_X, out error_medio_Z);
-                      vector_brazo.X = initial_wrist.X - initial_shoulder.X;
-                      vector_brazo.Y = initial_wrist.Y - initial_shoulder.Y;
-                      vector_brazo.Z = initial_wrist.Z - initial_shoulder.Z;
-                      offset_dim = offset_perc * modulo(vector_brazo);
-                      wrist_with_Z_offset = initial_wrist;
-                      wrist_with_Z_offset.Z += (float) offset_dim;
-                      valores_base(initial_shoulder, initial_wrist, wrist_with_Z_offset, out offset_angulo, 
-                          out diferencia_X, out diferencia_Z);
+                  estado = ESTADO.PREPARADO;
+               }
+            }
+            else if (estado == ESTADO.HACIA_ARRIBA)
+            {
+               valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
-                      estado = ESTADO.PREPARADO;
-                  }
-              }
-              else if (estado == ESTADO.HACIA_ARRIBA)
-              {
-                  valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
+               if (diferencia_X > (2 * error_medio_X + offset_dim))
+               {
+                  estado = ESTADO.ERROR_MARGEN_X;
+               }
+               else if (diferencia_Z > (2 * error_medio_Z + offset_dim))
+               {
+                  estado = ESTADO.ERROR_MARGEN_Z;
+               }
+               else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo && this.angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
+               {
+                  estado = ESTADO.HACIA_ABAJO;
+               }
+            }
+            else if (estado == ESTADO.HACIA_ABAJO)
+            {
+               valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
-                  if (diferencia_X > (2 * error_medio_X + offset_dim))
-                  {
-                      estado = ESTADO.ERROR_MARGEN_X;
-                  }
-                  else if (diferencia_Z > (2 * error_medio_Z + offset_dim))
-                  {
-                      estado = ESTADO.ERROR_MARGEN_Z;
-                  }
-                  else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < angulo  && angulo < (70.0 + error_medio_angulo + offset_angulo / 2))
-                  {
-                      estado = ESTADO.HACIA_ABAJO;
-                  }
-              }
-              else if (estado == ESTADO.HACIA_ABAJO)
-              {
-                  valores_base(initial_shoulder, initial_wrist, wrist, out angulo, out diferencia_X, out diferencia_Z);
+               if (diferencia_X > (2 * error_medio_X + offset_dim))
+               {
+                  estado = ESTADO.ERROR_MARGEN_X;
+               }
+               else if (this.angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
+               {
+                  estado = ESTADO.ERROR_MARGEN_Z;
+               }
+               else if (this.angulo < (error_medio_angulo + offset_angulo / 2))
+               {
+                  estado = ESTADO.COMPLETADO;
+               }
+            }
+         }
 
-                  if (diferencia_X > (2 * error_medio_X + offset_dim))
-                  {
-                      estado = ESTADO.ERROR_MARGEN_X;
-                  }
-                  else if (angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
-                  {
-                      estado = ESTADO.ERROR_MARGEN_Z;
-                  }
-                  else if (angulo < (error_medio_angulo + offset_angulo / 2))
-                  {
-                      estado = ESTADO.COMPLETADO;
-                  }
-              }
-          }
+         public ESTADO getEstado()
+         {
+            return estado;
+         }
 
-          public ESTADO getEstado()
-          {
-              return estado;
-          }
+         public bool preparado()
+         {
+            return estado == ESTADO.PREPARADO;
+         }
 
-          public bool preparado()
-          {
-              return estado == ESTADO.PREPARADO;
-          }
+         public bool completado()
+         {
+            return estado == ESTADO.COMPLETADO;
+         }
 
-          public bool completado()
-          {
-              return estado == ESTADO.COMPLETADO;
-          }
-
-          public void detectar()
-          {
-              if (estado == ESTADO.PREPARADO || estado == ESTADO.COMPLETADO)
-              {
-                  estado = ESTADO.HACIA_ARRIBA;
-              }
-          }
+         public void detectar()
+         {
+            if (estado == ESTADO.PREPARADO || estado == ESTADO.COMPLETADO)
+            {
+               estado = ESTADO.HACIA_ARRIBA;
+            }
+         }
       }
 
       public class MovimientoPierna : Movimiento
@@ -619,7 +665,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                }
                else if (this.getState() == ESTADO.FAIL)
                {
-                  if (this.IsAlignedBodyAndArms(skel) && (this.AreFeetTogether(skel) || this.AreFeetSeparate(skel)))
+                  if (Posicion.IsAlignedBodyAndArms(skel) && (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
                   {
                      this.setState(ESTADO.INICIAL);
                   }
