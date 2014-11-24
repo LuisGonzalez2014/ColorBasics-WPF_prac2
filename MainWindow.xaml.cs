@@ -209,13 +209,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                        Indicador barra_pder = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
-                       Indicador barra_pizq = new Indicador(10, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
-                                      skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
-                    //   Indicador barra_b = new Indicador(5, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
-                    //                  skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+
                        barra_pder.dibujarPuntos();
-                       barra_pizq.dibujarPuntos();
-                    //   barra_b.dibujarPuntos();
+                       num_rep.Text = mov_pierna.getRepetitions().ToString();
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
