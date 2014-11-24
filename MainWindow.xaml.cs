@@ -167,9 +167,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
-
-        MovimientoBrazo mov = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
-        MovimientoPierna mov_pierna = new MovimientoPierna();
+        // Tipos de datos necesarios
+        public enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
+        bool movimiento_1 = true;
+        const double ANGULO_SINC = 20;
+        MovimientoBrazo mov_brazo_izq = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
+        MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
+        MovimientoPierna mov_pierna_izq = new MovimientoPierna();
+        MovimientoPierna mov_pierna_der = new MovimientoPierna();
+        ESTADO state = ESTADO.INICIO;
+        int repetetitions = 10;
 
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
@@ -201,19 +208,103 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       /*
-                       mov.actualizar(skel);
-                       mov.detectar();
+                       //mov.actualizar(skel);
+                       //mov.detectar();
 
-                       mov_pierna.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
-                       sms_block.Text = mov_pierna.getMessageError();
+                       mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
+                       //sms_block.Text = mov_pierna.getMessageError();
 
-                       Indicador barra_pder = new Indicador(15, dc, mov_pierna.getInitialHip(), mov_pierna.getInitialKnee(),
+                       Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                        barra_pder.dibujarPuntos();
-                       */
 
+                       num_rep.Text = repetetitions.ToString();
+                       /*
+                       Indicador barra_pder, barra_pizq, barra_bder, barra_bizq;
 
+                       if (state == ESTADO.INICIO && Posicion.IsAlignedBodyAndArms(skel) &&
+                          (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
+                       {
+                          state = ESTADO.DETECTADO;
+                       }
+                       else if (state == ESTADO.DETECTADO)
+                       {
+                          mov_brazo_der.reset();
+                          mov_brazo_izq.reset();
+
+                          while (!(mov_brazo_der.preparado() && mov_brazo_izq.preparado()))
+                          {
+                             mov_brazo_der.actualizar(skel);
+                             mov_brazo_izq.actualizar(skel);
+                          }
+                          if (movimiento_1)
+                             state = ESTADO.MOV_1;
+                          else
+                             state = ESTADO.MOV_2;
+                       }
+                       else if (state == ESTADO.MOV_1)
+                       {
+                          mov_pierna_izq.updateMovement(skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], skel);
+                          mov_brazo_der.actualizar(skel);
+
+                          barra_bder = new Indicador(15, dc, mov_brazo_der.getShoulderPoint(), mov_brazo_der.getWristPoint(),
+                                      skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                          barra_bder.dibujarPuntos();
+
+                          barra_pizq = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
+                                      skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
+                          barra_pizq.dibujarPuntos();
+
+                          if (Math.Abs(mov_brazo_der.getAngulo() - mov_pierna_izq.getAngle()) > ANGULO_SINC)
+                          {
+                             state = ESTADO.FAIL;
+                          }
+                          else if (mov_brazo_der.completado() && mov_pierna_izq.getState() == MovimientoPierna.ESTADO.ALCANZADO)
+                          {
+                             repetetitions--;
+                             if (repetetitions == 0)
+                                state = ESTADO.COMPLETADO;
+                             else
+                             {
+                                movimiento_1 = false;
+                                state = ESTADO.MOV_2;
+                             }
+                          }
+                       }
+                       else if (state == ESTADO.MOV_2)
+                       {
+                          mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
+                          mov_brazo_izq.actualizar(skel);
+
+                          barra_bizq = new Indicador(15, dc, mov_brazo_izq.getShoulderPoint(), mov_brazo_izq.getWristPoint(),
+                                      skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
+                          barra_bizq.dibujarPuntos();
+
+                          barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+                                      skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                          barra_pder.dibujarPuntos();
+
+                          if (Math.Abs(mov_brazo_izq.getAngulo() - mov_pierna_der.getAngle()) > ANGULO_SINC)
+                          {
+                             state = ESTADO.FAIL;
+                          }
+                          else if (mov_brazo_izq.completado() && mov_pierna_der.getState() == MovimientoPierna.ESTADO.ALCANZADO)
+                          {
+                             repetetitions--;
+                             if (repetetitions == 0)
+                                state = ESTADO.COMPLETADO;
+                             else
+                             {
+                                movimiento_1 = true;
+                                state = ESTADO.MOV_1;
+                             }
+                          }
+                       }
+                       else if (state == ESTADO.FAIL)
+                       {
+                          sms_block.Text = "Coloque el cuerpo en la posición de reposo.";
+                          state = ESTADO.INICIO;
+                       }*/
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {

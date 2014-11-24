@@ -20,17 +20,36 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     /// </summary>
    public partial class MainWindow : Window
    {
+      public class WriteableJoint
+      {
+         public SkeletonPoint Position;
+         public JointType JointType;
+
+         public WriteableJoint(Joint j)
+         {
+            this.Position = j.Position;
+            this.JointType = j.JointType;
+         }
+
+         public WriteableJoint(SkeletonPoint sp, JointType jt)
+         {
+            this.Position = sp;
+            this.JointType = jt;
+         }
+      }
+
       public class Indicador
       {
          private DrawingContext dc;
-         private Joint A_initial, B_initial, A_actual, B_actual;
+         private WriteableJoint A_initial, B_initial;
+         private Joint A_actual, B_actual;
          private int num_puntos;
          private Brush color_1;
          private Brush color_2;
          private Brush color_3;
          MainWindow main_window;
 
-         public Indicador(int num, DrawingContext drco, Joint A_ini, Joint B_ini, Joint A_act, Joint B_act, MainWindow mw)
+         public Indicador(int num, DrawingContext drco, WriteableJoint A_ini, WriteableJoint B_ini, Joint A_act, Joint B_act, MainWindow mw)
          {
             this.num_puntos = ((num<3) ? 3 : num);
             this.dc = drco;
@@ -45,12 +64,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          // Métodos consultores
-         public Joint getAinitial()
+         public WriteableJoint getAinitial()
          {
             return this.A_initial;
          }
 
-         public Joint getBinitial()
+         public WriteableJoint getBinitial()
          {
             return this.B_initial;
          }
@@ -71,12 +90,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          // Métodos modificadores
-         public void setAinitial(Joint A_ini)
+         public void setAinitial(WriteableJoint A_ini)
          {
             this.A_initial = A_ini;
          }
 
-         public void setBinitial(Joint B_ini)
+         public void setBinitial(WriteableJoint B_ini)
          {
             this.B_initial = B_ini;
          }
@@ -181,175 +200,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             diferencia_X = Math.Abs(punto_actual.X - punto_inicial.X);
             diferencia_Z = punto_actual.Z - punto_inicial.Z;
          }
-
-         // boolean method that return true if body is completely aligned and arms are in a relaxed position
-         public bool IsAlignedBodyAndArms(Skeleton received)
-         {
-            double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
-            double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
-            double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
-
-            double ShoulCenterPosX = received.Joints[JointType.ShoulderCenter].Position.X;
-            double ShoulCenterPosY = received.Joints[JointType.ShoulderCenter].Position.Y;
-            double ShoulCenterPosZ = received.Joints[JointType.ShoulderCenter].Position.Z;
-
-            double HeadCenterPosX = received.Joints[JointType.Head].Position.X;
-            double HeadCenterPosY = received.Joints[JointType.Head].Position.Y;
-            double HeadCenterPosZ = received.Joints[JointType.Head].Position.Z;
-
-            double ElbLPosX = received.Joints[JointType.ElbowLeft].Position.X;
-            double ElbLPosY = received.Joints[JointType.ElbowLeft].Position.Y;
-
-            double ElbRPosX = received.Joints[JointType.ElbowRight].Position.X;
-            double ElbRPosY = received.Joints[JointType.ElbowRight].Position.Y;
-
-            double WriLPosX = received.Joints[JointType.WristLeft].Position.X;
-            double WriLPosY = received.Joints[JointType.WristLeft].Position.Y;
-            double WriLPosZ = received.Joints[JointType.WristLeft].Position.Z;
-
-            double WriRPosX = received.Joints[JointType.WristRight].Position.X;
-            double WriRPosY = received.Joints[JointType.WristRight].Position.Y;
-            double WriRPosZ = received.Joints[JointType.WristRight].Position.Z;
-
-            double ShouLPosX = received.Joints[JointType.ShoulderLeft].Position.X;
-            double ShouLPosY = received.Joints[JointType.ShoulderLeft].Position.Y;
-            double ShouLPosZ = received.Joints[JointType.ShoulderLeft].Position.Z;
-
-            double ShouRPosX = received.Joints[JointType.ShoulderRight].Position.X;
-            double ShouRPosY = received.Joints[JointType.ShoulderRight].Position.Y;
-            double ShouRPosZ = received.Joints[JointType.ShoulderRight].Position.Z;
-
-            //have to change to correspond to the 5% error
-            //distance from Shoulder to Wrist for the projection in line with shoulder
-            double distShouLtoWristL = ShouLPosY - WriLPosY;
-            //caldulate admited error 5% that correspond to 9 degrees for each side
-            double radian = (9 * Math.PI) / 180;
-            double DistErrorL = distShouLtoWristL * Math.Tan(radian);
-
-            double distShouLtoWristR = ShouRPosY - WriRPosY;
-            //caldulate admited error 5% that correspond to 9 degrees for each side
-
-            double DistErrorR = distShouLtoWristR * Math.Tan(radian);
-            //double ProjectionWristX = ShouLPosX;
-            //double ProjectionWristZ = WriLPosZ;
-
-            //determine of projected point from shoulder to wrist LEFT and RIGHT and then assume error
-            double ProjectedPointWristLX = ShouLPosX;
-            double ProjectedPointWristLY = WriLPosY;
-            double ProjectedPointWristLZ = ShouLPosZ;
-
-            double ProjectedPointWristRX = ShouRPosX;
-            double ProjectedPointWristRY = WriRPosY;
-            double ProjectedPointWristRZ = ShouRPosZ;
-
-            //Create method to verify if the center of the body is completely aligned
-            //head with shoulder center and with hip center
-            if (Math.Abs(HeadCenterPosX - ShoulCenterPosX) <= 0.05 && Math.Abs(ShoulCenterPosX - HipCenterPosX) <= 0.05)
-            {
-               //if position of left wrist is between [ProjectedPointWrist-DistError,ProjectedPointWrist+DistError]
-               if (Math.Abs(WriLPosX - ProjectedPointWristLX) <= DistErrorL && Math.Abs(WriRPosX - ProjectedPointWristRX) <= DistErrorR)
-               {
-                  return true;
-               }
-               else
-                  return false;
-            }
-            else
-               return false;
-         }
-         
-         //first position to be Tracked and Accepted
-         public bool AreFeetTogether(Skeleton received)
-         {
-            foreach (Joint joint in received.Joints)
-            {
-               if (joint.TrackingState == JointTrackingState.Tracked)
-               {//first verify if the body is alignet and arms are in a relaxed position
-
-                  //{here verify if the feet are together
-                  //use the same strategy that was used in the previous case of the arms in a  relaxed position
-                  double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
-                  double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
-                  double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
-
-                  //if left ankle is very close to right ankle then verify the rest of the skeleton points
-                  //if (received.Joints[JointType.AnkleLeft].Equals(received.Joints[JointType.AnkleRight])) 
-                  double AnkLPosX = received.Joints[JointType.AnkleLeft].Position.X;
-                  double AnkLPosY = received.Joints[JointType.AnkleLeft].Position.Y;
-                  double AnkLPosZ = received.Joints[JointType.AnkleLeft].Position.Z;
-
-                  double AnkRPosX = received.Joints[JointType.AnkleRight].Position.X;
-                  double AnkRPosY = received.Joints[JointType.AnkleRight].Position.Y;
-                  double AnkRPosZ = received.Joints[JointType.AnkleRight].Position.Z;
-                  //assume that the distance Y between HipCenter to each foot is the same
-                  double distHiptoAnkleL = HipCenterPosY - AnkLPosY;
-                  //caldulate admited error 5% that correspond to 9 degrees for each side
-                  double radian1 = (4.5 * Math.PI) / 180;
-                  double DistErrorL = distHiptoAnkleL * Math.Tan(radian1);
-                  //determine of projected point from HIP CENTER to LEFT ANKLE and RIGHT and then assume error
-                  double ProjectedPointFootLX = HipCenterPosX;
-                  double ProjectedPointFootLY = AnkLPosY;
-                  double ProjectedPointFootLZ = HipCenterPosZ;
-
-                  // could variate AnkLposX and AnkLPosY
-                  if (Math.Abs(AnkLPosX - ProjectedPointFootLX) <= DistErrorL && Math.Abs(AnkRPosX - ProjectedPointFootLX) <= DistErrorL)
-                     return true;
-                  else
-                     return false;
-               }//CLOSE if (joint.TrackingState == JointTrackingState.Tracked)
-               else
-                  return false;
-            }//close foreach
-            return false;
-         }//close method AreFeetTogether
-         
-         //method for the second position feet separate between 60 degrees to be accepted
-         public bool AreFeetSeparate(Skeleton received)
-         {
-            foreach (Joint joint in received.Joints)
-            {
-               if (joint.TrackingState == JointTrackingState.Tracked)
-               {//first verify if the body is alignet and arms are in a relaxed position
-                  //{//here verify if the feet are together
-                  //use the same strategy that was used in the previous case of the arms in a  relaxed position
-                  double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
-                  double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
-                  double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
-
-                  //if left ankle is very close to right ankle then verify the rest of the skeleton points
-                  //if (received.Joints[JointType.AnkleLeft].Equals(received.Joints[JointType.AnkleRight])) 
-                  double AnkLPosX = received.Joints[JointType.AnkleLeft].Position.X;
-                  double AnkLPosY = received.Joints[JointType.AnkleLeft].Position.Y;
-                  double AnkLPosZ = received.Joints[JointType.AnkleLeft].Position.Z;
-
-                  double AnkRPosX = received.Joints[JointType.AnkleRight].Position.X;
-                  double AnkRPosY = received.Joints[JointType.AnkleRight].Position.Y;
-                  double AnkRPosZ = received.Joints[JointType.AnkleRight].Position.Z;
-                  //assume that the distance Y between HipCenter to each foot is the same
-                  double distHiptoAnkleL = HipCenterPosY - AnkLPosY;
-                  //caldulate admited error 5% that correspond to 9 degrees for each side
-                  double radian1 = (4.5 * Math.PI) / 180;
-                  double DistErrorL = distHiptoAnkleL * Math.Tan(radian1);
-                  //determine of projected point from HIP CENTER to LEFT ANKLE and RIGHT and then assume error
-                  double ProjectedPointFootLX = HipCenterPosX;
-                  double ProjectedPointFootLY = AnkLPosY;
-                  double ProjectedPointFootLZ = HipCenterPosZ;
-
-                  double radian2 = (30 * Math.PI) / 180;
-                  double DistSeparateFoot = distHiptoAnkleL * Math.Tan(radian2);
-                  //DrawingVisual MyDrawingVisual = new DrawingVisual();
-
-                  // could variate AnkLposX and AnkLPosY
-                  if (Math.Abs(AnkRPosX - AnkLPosX) <= Math.Abs(DistSeparateFoot + DistErrorL) && Math.Abs(AnkRPosX - AnkLPosX) >= Math.Abs((DistSeparateFoot) - DistErrorL))
-                     return true;
-                  else
-                     return false;
-               }//CLOSE if (joint.TrackingState == JointTrackingState.Tracked)
-               else
-                  return false;
-            }//close foreach
-            return false;
-         }//close method AreFeetseparate
       }
 
       public class MovimientoBrazo : Movimiento
@@ -406,14 +256,21 @@ namespace Microsoft.Samples.Kinect.ColorBasics
               return this.angulo;
           }
 
-          public SkeletonPoint getShoulderPoint()
+          public WriteableJoint getShoulderPoint()
           {
-              return this.initial_shoulder;
+             WriteableJoint j = new WriteableJoint(this.initial_shoulder, this.shoulder_type);
+             return j;
           }
 
-          public SkeletonPoint getWristPoint()
+          public WriteableJoint getWristPoint()
           {
-              return this.initial_wrist;
+             WriteableJoint j = new WriteableJoint(this.initial_wrist, this.wrist_type);
+             return j;
+          }
+
+          public void reset()
+          {
+             this.estado = ESTADO.CALIBRAR;
           }
 
           public void actualizar(Skeleton skel)
@@ -636,7 +493,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                }
                else if (this.getState() == ESTADO.FAIL)
                {
-                  if (this.IsAlignedBodyAndArms(skel) && (this.AreFeetTogether(skel) || this.AreFeetSeparate(skel)))
+                  if (Posicion.IsAlignedBodyAndArms(skel) && (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
                   {
                      this.setState(ESTADO.INICIAL);
                   }
@@ -653,6 +510,177 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             else // Si no se trata de la cadera y rodilla de la misma pierna no se ejecuta nada
                return;
          }
+      }
+
+      public class Posicion {
+         // boolean method that return true if body is completely aligned and arms are in a relaxed position
+         public static bool IsAlignedBodyAndArms(Skeleton received)
+         {
+            double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
+            double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
+            double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
+
+            double ShoulCenterPosX = received.Joints[JointType.ShoulderCenter].Position.X;
+            double ShoulCenterPosY = received.Joints[JointType.ShoulderCenter].Position.Y;
+            double ShoulCenterPosZ = received.Joints[JointType.ShoulderCenter].Position.Z;
+
+            double HeadCenterPosX = received.Joints[JointType.Head].Position.X;
+            double HeadCenterPosY = received.Joints[JointType.Head].Position.Y;
+            double HeadCenterPosZ = received.Joints[JointType.Head].Position.Z;
+
+            double ElbLPosX = received.Joints[JointType.ElbowLeft].Position.X;
+            double ElbLPosY = received.Joints[JointType.ElbowLeft].Position.Y;
+
+            double ElbRPosX = received.Joints[JointType.ElbowRight].Position.X;
+            double ElbRPosY = received.Joints[JointType.ElbowRight].Position.Y;
+
+            double WriLPosX = received.Joints[JointType.WristLeft].Position.X;
+            double WriLPosY = received.Joints[JointType.WristLeft].Position.Y;
+            double WriLPosZ = received.Joints[JointType.WristLeft].Position.Z;
+
+            double WriRPosX = received.Joints[JointType.WristRight].Position.X;
+            double WriRPosY = received.Joints[JointType.WristRight].Position.Y;
+            double WriRPosZ = received.Joints[JointType.WristRight].Position.Z;
+
+            double ShouLPosX = received.Joints[JointType.ShoulderLeft].Position.X;
+            double ShouLPosY = received.Joints[JointType.ShoulderLeft].Position.Y;
+            double ShouLPosZ = received.Joints[JointType.ShoulderLeft].Position.Z;
+
+            double ShouRPosX = received.Joints[JointType.ShoulderRight].Position.X;
+            double ShouRPosY = received.Joints[JointType.ShoulderRight].Position.Y;
+            double ShouRPosZ = received.Joints[JointType.ShoulderRight].Position.Z;
+
+            //have to change to correspond to the 5% error
+            //distance from Shoulder to Wrist for the projection in line with shoulder
+            double distShouLtoWristL = ShouLPosY - WriLPosY;
+            //caldulate admited error 5% that correspond to 9 degrees for each side
+            double radian = (9 * Math.PI) / 180;
+            double DistErrorL = distShouLtoWristL * Math.Tan(radian);
+
+            double distShouLtoWristR = ShouRPosY - WriRPosY;
+            //caldulate admited error 5% that correspond to 9 degrees for each side
+
+            double DistErrorR = distShouLtoWristR * Math.Tan(radian);
+            //double ProjectionWristX = ShouLPosX;
+            //double ProjectionWristZ = WriLPosZ;
+
+            //determine of projected point from shoulder to wrist LEFT and RIGHT and then assume error
+            double ProjectedPointWristLX = ShouLPosX;
+            double ProjectedPointWristLY = WriLPosY;
+            double ProjectedPointWristLZ = ShouLPosZ;
+
+            double ProjectedPointWristRX = ShouRPosX;
+            double ProjectedPointWristRY = WriRPosY;
+            double ProjectedPointWristRZ = ShouRPosZ;
+
+            //Create method to verify if the center of the body is completely aligned
+            //head with shoulder center and with hip center
+            if (Math.Abs(HeadCenterPosX - ShoulCenterPosX) <= 0.05 && Math.Abs(ShoulCenterPosX - HipCenterPosX) <= 0.05)
+            {
+               //if position of left wrist is between [ProjectedPointWrist-DistError,ProjectedPointWrist+DistError]
+               if (Math.Abs(WriLPosX - ProjectedPointWristLX) <= DistErrorL && Math.Abs(WriRPosX - ProjectedPointWristRX) <= DistErrorR)
+               {
+                  return true;
+               }
+               else
+                  return false;
+            }
+            else
+               return false;
+         }
+
+         //first position to be Tracked and Accepted
+         public static bool AreFeetTogether(Skeleton received)
+         {
+            foreach (Joint joint in received.Joints)
+            {
+               if (joint.TrackingState == JointTrackingState.Tracked)
+               {//first verify if the body is alignet and arms are in a relaxed position
+
+                  //{here verify if the feet are together
+                  //use the same strategy that was used in the previous case of the arms in a  relaxed position
+                  double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
+                  double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
+                  double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
+
+                  //if left ankle is very close to right ankle then verify the rest of the skeleton points
+                  //if (received.Joints[JointType.AnkleLeft].Equals(received.Joints[JointType.AnkleRight])) 
+                  double AnkLPosX = received.Joints[JointType.AnkleLeft].Position.X;
+                  double AnkLPosY = received.Joints[JointType.AnkleLeft].Position.Y;
+                  double AnkLPosZ = received.Joints[JointType.AnkleLeft].Position.Z;
+
+                  double AnkRPosX = received.Joints[JointType.AnkleRight].Position.X;
+                  double AnkRPosY = received.Joints[JointType.AnkleRight].Position.Y;
+                  double AnkRPosZ = received.Joints[JointType.AnkleRight].Position.Z;
+                  //assume that the distance Y between HipCenter to each foot is the same
+                  double distHiptoAnkleL = HipCenterPosY - AnkLPosY;
+                  //caldulate admited error 5% that correspond to 9 degrees for each side
+                  double radian1 = (4.5 * Math.PI) / 180;
+                  double DistErrorL = distHiptoAnkleL * Math.Tan(radian1);
+                  //determine of projected point from HIP CENTER to LEFT ANKLE and RIGHT and then assume error
+                  double ProjectedPointFootLX = HipCenterPosX;
+                  double ProjectedPointFootLY = AnkLPosY;
+                  double ProjectedPointFootLZ = HipCenterPosZ;
+
+                  // could variate AnkLposX and AnkLPosY
+                  if (Math.Abs(AnkLPosX - ProjectedPointFootLX) <= DistErrorL && Math.Abs(AnkRPosX - ProjectedPointFootLX) <= DistErrorL)
+                     return true;
+                  else
+                     return false;
+               }//CLOSE if (joint.TrackingState == JointTrackingState.Tracked)
+               else
+                  return false;
+            }//close foreach
+            return false;
+         }//close method AreFeetTogether
+
+         //method for the second position feet separate between 60 degrees to be accepted
+         public static bool AreFeetSeparate(Skeleton received)
+         {
+            foreach (Joint joint in received.Joints)
+            {
+               if (joint.TrackingState == JointTrackingState.Tracked)
+               {//first verify if the body is alignet and arms are in a relaxed position
+                  //{//here verify if the feet are together
+                  //use the same strategy that was used in the previous case of the arms in a  relaxed position
+                  double HipCenterPosX = received.Joints[JointType.HipCenter].Position.X;
+                  double HipCenterPosY = received.Joints[JointType.HipCenter].Position.Y;
+                  double HipCenterPosZ = received.Joints[JointType.HipCenter].Position.Z;
+
+                  //if left ankle is very close to right ankle then verify the rest of the skeleton points
+                  //if (received.Joints[JointType.AnkleLeft].Equals(received.Joints[JointType.AnkleRight])) 
+                  double AnkLPosX = received.Joints[JointType.AnkleLeft].Position.X;
+                  double AnkLPosY = received.Joints[JointType.AnkleLeft].Position.Y;
+                  double AnkLPosZ = received.Joints[JointType.AnkleLeft].Position.Z;
+
+                  double AnkRPosX = received.Joints[JointType.AnkleRight].Position.X;
+                  double AnkRPosY = received.Joints[JointType.AnkleRight].Position.Y;
+                  double AnkRPosZ = received.Joints[JointType.AnkleRight].Position.Z;
+                  //assume that the distance Y between HipCenter to each foot is the same
+                  double distHiptoAnkleL = HipCenterPosY - AnkLPosY;
+                  //caldulate admited error 5% that correspond to 9 degrees for each side
+                  double radian1 = (4.5 * Math.PI) / 180;
+                  double DistErrorL = distHiptoAnkleL * Math.Tan(radian1);
+                  //determine of projected point from HIP CENTER to LEFT ANKLE and RIGHT and then assume error
+                  double ProjectedPointFootLX = HipCenterPosX;
+                  double ProjectedPointFootLY = AnkLPosY;
+                  double ProjectedPointFootLZ = HipCenterPosZ;
+
+                  double radian2 = (30 * Math.PI) / 180;
+                  double DistSeparateFoot = distHiptoAnkleL * Math.Tan(radian2);
+                  //DrawingVisual MyDrawingVisual = new DrawingVisual();
+
+                  // could variate AnkLposX and AnkLPosY
+                  if (Math.Abs(AnkRPosX - AnkLPosX) <= Math.Abs(DistSeparateFoot + DistErrorL) && Math.Abs(AnkRPosX - AnkLPosX) >= Math.Abs((DistSeparateFoot) - DistErrorL))
+                     return true;
+                  else
+                     return false;
+               }//CLOSE if (joint.TrackingState == JointTrackingState.Tracked)
+               else
+                  return false;
+            }//close foreach
+            return false;
+         }//close method AreFeetseparate
       }
    }
 }
