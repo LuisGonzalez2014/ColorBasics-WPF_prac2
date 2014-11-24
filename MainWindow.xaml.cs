@@ -168,14 +168,14 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
 
         // Tipos de datos necesarios
-        public enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
-        bool movimiento_1 = true;
+        enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
+        //bool movimiento_1 = true;
         const double ANGULO_SINC = 20;
         MovimientoBrazo mov_brazo_izq = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
         MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
         MovimientoPierna mov_pierna_izq = new MovimientoPierna();
         MovimientoPierna mov_pierna_der = new MovimientoPierna();
-        ESTADO state = ESTADO.INICIO;
+        //ESTADO state = ESTADO.INICIO;
         int repetetitions = 10;
 
         /// <summary>
@@ -208,11 +208,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       //mov.actualizar(skel);
-                       //mov.detectar();
-
                        mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
-                       //sms_block.Text = mov_pierna.getMessageError();
 
                        Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
