@@ -175,15 +175,17 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         MovimientoPierna mov_pierna = new MovimientoPierna();
 
         // Tipos de datos necesarios
-        enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
+        enum ESTADO { ESPERA, DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
         bool movimiento_1 = true;
         const double ANGULO_SINC = 30; // diferencia de angulos en posiciones finales
         MovimientoBrazo mov_brazo_izq = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
         MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
         MovimientoPierna mov_pierna_izq = new MovimientoPierna();
         MovimientoPierna mov_pierna_der = new MovimientoPierna();
-        ESTADO state;// = ESTADO.INICIO;
+        ESTADO state = ESTADO.ESPERA;
         int repeticiones = 10;
+        int fallos = 0;
+        DateTime t_inicial, t_final;
 
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
@@ -230,7 +232,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         */
 
                        num_rep.Text = repeticiones.ToString();
-                       sms_block.Text = mov_brazo_der.getEstado().ToString()+ " - ".ToString() + state.ToString() + String.Format("{0:0.0}", mov_brazo_der.getAngulo()) + " - ".ToString()+String.Format("{0:0.0}", mov_pierna_izq.getAngle());
+                       sms_block.Text = mov_pierna_izq.getState().ToString()+ " - ".ToString() + state.ToString() + String.Format("{0:0.0}", mov_brazo_der.getAngulo()) + " - ".ToString()+String.Format("{0:0.0}", mov_pierna_izq.getAngle());
 
                        if (state == ESTADO.INICIO && Posicion.IsAlignedBodyAndArms(skel) &&
                           (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
@@ -267,11 +269,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                       skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.WristRight], this);
                           barra_bder.dibujarPuntos();
 
-                          Indicador barra_pizq = new Indicador(15, 50, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
+                          Indicador barra_pizq = new Indicador(10, 50, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
                                       skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
                           barra_pizq.dibujarPuntos();
 
-                          if (Math.Abs(mov_brazo_der.getAngulo() - mov_pierna_izq.getAngle()) > ANGULO_SINC)
+                          if ((Math.Abs(mov_brazo_der.getAngulo() - mov_pierna_izq.getAngle()) > ANGULO_SINC) || mov_pierna_izq.getFAIL() || mov_brazo_der.existeError())
                           {
                              state = ESTADO.FAIL;
                           }
@@ -297,11 +299,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                       skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.WristLeft], this);
                           barra_bizq.dibujarPuntos();
 
-                          Indicador barra_pder = new Indicador(15, 50, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+                          Indicador barra_pder = new Indicador(10, 50, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                           barra_pder.dibujarPuntos();
 
-                          if (Math.Abs(mov_brazo_izq.getAngulo() - mov_pierna_der.getAngle()) > ANGULO_SINC)
+                          if ((Math.Abs(mov_brazo_izq.getAngulo() - mov_pierna_der.getAngle()) > ANGULO_SINC) || mov_pierna_der.getFAIL() || mov_brazo_izq.existeError())
                           {
                              state = ESTADO.FAIL;
                           }
@@ -322,6 +324,46 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        {
                           sms_block.Text = "Coloque el cuerpo en la posición de reposo.";
                           state = ESTADO.INICIO;
+                          fallos++;
+                          mov_pierna_der.setINITIAL();
+                          mov_pierna_izq.setINITIAL();
+                       }
+                       else if (state == ESTADO.COMPLETADO)
+                       {
+                           // fallos, total_segundos -> medallas
+                           t_final = DateTime.Now;
+                           TimeSpan diferencia = t_final - t_inicial;
+                           double total_segundos = diferencia.TotalSeconds;
+                           info.Text = diferencia.ToString();
+
+                           double eval = (total_segundos / 20) * Math.Sqrt(fallos);
+
+                           if (eval <= 1.0)
+                           {
+                                Image image = new Image();
+                                image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/oro_medal.png");
+                                medalla.Source = image.Source;
+                               // oro
+                           }
+                           else if (eval <= 2.0)
+                           {
+                               Image image = new Image();
+                               image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/plata_medal.png");
+                               medalla.Source = image.Source;
+                               // plata
+                           }
+                           else if (eval <= 3.0)
+                           {
+                               Image image = new Image();
+                               image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/bronce_medal.png");
+                               medalla.Source = image.Source;
+                               //bronce
+                           }
+                           else
+                           {
+                               sms_block.Text = "¡ Gracias por participar ! (Consejo: debes mejorar)";
+                               // premio consolacion
+                           }
                        }
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
@@ -352,9 +394,18 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         private void bot_inicio_Click(object sender, RoutedEventArgs e)
         {
            state = ESTADO.INICIO;
-//           Image image = new Image();
-//           image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/medals.png");
-//           medalla.Source = image.Source;
+           t_inicial = DateTime.Now;
+           fallos = 0;
+           repeticiones = 10;
+           mov_pierna_der.setINITIAL();
+           mov_pierna_izq.setINITIAL();
+           mov_brazo_der.reset();
+           mov_brazo_izq.reset();
+           movimiento_1 = true;
+           
+           Image image = new Image();
+           image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/3_medals.png");
+           medalla.Source = image.Source;
         }
     }
 }

@@ -556,6 +556,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                estado = ESTADO.HACIA_ARRIBA;
             }
          }
+
+         public bool existeError()
+         {
+             return estado == ESTADO.ERROR_MARGEN_X || estado == ESTADO.ERROR_MARGEN_Z;
+         }
       }
 
       public class MovimientoPierna : Movimiento
@@ -565,8 +570,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          private const double MIN_ANGULO = 3;        // Ángulo a partir del cual se considera que la pierna entra en movimiento
          private const double MAX_ANGULO = 50;       // Ángulo establecido como tope del movimiento a realizar
-         private const double ERROR = 0.05;          // Se admite un error del 5%
-         private const double DESPL_PERMITED = 0.04; // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm
+         private const double ERROR = 0.2;           // Se admite un error del 5%
+         private const double DESPL_PERMITED = 0.1; // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm
          private Joint hip_initial, knee_initial;    // Cadera y rodilla capturadas inicialmente
          private double angle;                       // Ángulo de la pierna en movimiento
          private ESTADO state;                       // Estado de ejecución del movimiento
@@ -622,6 +627,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public bool getINITIAL()
          {
             return this.getState() == ESTADO.INITIAL;
+         }
+
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado INITIAL
+         /// </summary>
+         /// <returns>initial state</returns>
+         public void setINITIAL()
+         {
+             this.setState(ESTADO.INITIAL);
          }
 
          /// <summary>
@@ -719,7 +733,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   this.setState(ESTADO.FAIL);
                }
                // Si el ángulo de la pierna supera el ángulo mínimo, se está elevando la rodilla
-               else if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getREPOSE())
+               else if (MIN_ANGULO <= angulo && angulo <= MAX_ANGULO && this.getREPOSE())
                {
                   this.setState(ESTADO.MOVING);
                }
@@ -729,12 +743,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   this.setState(ESTADO.COMPLETE);
                }
                // Si el ángulo de la pierna decrementa por debajo del ángulo máximo, se está bajando la rodilla
-               else if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getCOMPLETE())
+               else if (MIN_ANGULO <= angulo && angulo <= MAX_ANGULO && this.getCOMPLETE())
                {
                   this.setState(ESTADO.MOVING);
                }
                // Si el ángulo de la pierna decrementa por debajo del ángulo mínimo, se ha llegado a la posición de reposo
-               else if (angulo < MIN_ANGULO && this.getMOVING())
+               else if (angulo <= MIN_ANGULO && this.getMOVING())
                {
                   this.setState(ESTADO.REPOSE);
                }
