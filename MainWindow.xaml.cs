@@ -14,6 +14,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
     using System.Collections.Generic;
+   using System.Windows.Controls;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -74,6 +75,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+//           Image image = new Image();
+//           image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/medals.png");
+//           medalla.Source = image.Source;
+
            // Create the drawing group we'll use for drawing
            this.drawingGroup = new DrawingGroup();
 
@@ -177,7 +182,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
         MovimientoPierna mov_pierna_izq = new MovimientoPierna();
         MovimientoPierna mov_pierna_der = new MovimientoPierna();
-        ESTADO state = ESTADO.INICIO;
+        ESTADO state;// = ESTADO.INICIO;
         int repeticiones = 10;
 
         /// <summary>
@@ -218,6 +223,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                        barra_pder.dibujarPuntos();
                        */
+                       /*
+                        Image image = new Image();
+                        image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/Logo.png");
+                        medalla.Source = image.Source;
+                        */
+
                        num_rep.Text = repeticiones.ToString();
                        sms_block.Text = mov_brazo_der.getEstado().ToString()+ " - ".ToString() + state.ToString() + String.Format("{0:0.0}", mov_brazo_der.getAngulo()) + " - ".ToString()+String.Format("{0:0.0}", mov_pierna_izq.getAngle());
 
@@ -264,9 +275,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
-                          //else if (mov_brazo_der.completado() && mov_pierna_izq.getState() == MovimientoPierna.ESTADO.ALCANZADO)
-                          //else if (mov_brazo_der.getAngulo() >= 70 && mov_pierna_izq.getAngle() >= 70)
-                          else if (mov_brazo_der.completado() && mov_pierna_izq.getAngle() >= 50) // cuidado con el angulo de la pierna!
+                          else if (mov_brazo_der.completado() && mov_pierna_izq.getCOMPLETE()) // cuidado con el angulo de la pierna!
                           {
                              repeticiones--;
                              if (repeticiones == 0)
@@ -296,9 +305,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
-                          //else if (mov_brazo_izq.completado() && mov_pierna_der.getState() == MovimientoPierna.ESTADO.ALCANZADO)
-                          //else if (mov_brazo_izq.getAngulo()>=70 && mov_pierna_der.getAngle() >= 70)
-                          else if (mov_brazo_izq.completado() && mov_pierna_der.getAngle() >= 50) // cuidado con el angulo de la pierna!
+                          else if (mov_brazo_izq.completado() && mov_pierna_der.getCOMPLETE()) // cuidado con el angulo de la pierna!
                           {
                              repeticiones--;
                              if (repeticiones == 0)
@@ -342,42 +349,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            return new Point(depthPoint.X, depthPoint.Y);
         }
 
-        /// <summary>
-        /// Handles the user clicking on the screenshot button
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void ButtonScreenshotClick(object sender, RoutedEventArgs e)
+        private void bot_inicio_Click(object sender, RoutedEventArgs e)
         {
-            if (null == this.sensor)
-            {
-                return;
-            }
-
-            // create a png bitmap encoder which knows how to save a .png file
-            BitmapEncoder encoder = new PngBitmapEncoder();
-
-            // create frame from the writable bitmap and add to encoder
-            encoder.Frames.Add(BitmapFrame.Create(this.colorBitmap));
-
-            string time = System.DateTime.Now.ToString("hh'-'mm'-'ss", CultureInfo.CurrentUICulture.DateTimeFormat);
-
-            string myPhotos = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-
-            string path = Path.Combine(myPhotos, "KinectSnapshot-" + time + ".png");
-
-            // write the new file to disk
-            try
-            {
-                using (FileStream fs = new FileStream(path, FileMode.Create))
-                {
-                    encoder.Save(fs);
-                }
-            }
-            catch (IOException)
-            {
-                //this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
-            }
+           state = ESTADO.INICIO;
+//           Image image = new Image();
+//           image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/medals.png");
+//           medalla.Source = image.Source;
         }
     }
 }
