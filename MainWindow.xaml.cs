@@ -263,11 +263,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           mov_pierna_izq.updateMovement(skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], skel);
                           mov_brazo_der.actualizar(skel);
                           
-                          Indicador barra_bder = new Indicador(15, dc, mov_brazo_der.getShoulderPoint(), mov_brazo_der.getWristPoint(),
+                          Indicador barra_bder = new Indicador(15, 70, dc, mov_brazo_der.getShoulderPoint(), mov_brazo_der.getWristPoint(),
                                       skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.WristRight], this);
                           barra_bder.dibujarPuntos();
 
-                          Indicador barra_pizq = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
+                          Indicador barra_pizq = new Indicador(15, 50, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
                                       skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
                           barra_pizq.dibujarPuntos();
 
@@ -293,11 +293,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
                           mov_brazo_izq.actualizar(skel);
                           
-                          Indicador barra_bizq = new Indicador(15, dc, mov_brazo_izq.getShoulderPoint(), mov_brazo_izq.getWristPoint(),
+                          Indicador barra_bizq = new Indicador(15, 70, dc, mov_brazo_izq.getShoulderPoint(), mov_brazo_izq.getWristPoint(),
                                       skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.WristLeft], this);
                           barra_bizq.dibujarPuntos();
 
-                          Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+                          Indicador barra_pder = new Indicador(15, 50, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                           barra_pder.dibujarPuntos();
 

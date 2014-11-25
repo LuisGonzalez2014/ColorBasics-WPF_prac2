@@ -44,14 +44,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          private WriteableJoint A_initial, B_initial;
          private Joint A_actual, B_actual;
          private int num_puntos;
+         private double angulo_max;
          private Brush color_1;
          private Brush color_2;
          private Brush color_3;
          MainWindow main_window;
 
-         public Indicador(int num, DrawingContext drco, WriteableJoint A_ini, WriteableJoint B_ini, Joint A_act, Joint B_act, MainWindow mw)
+         public Indicador(int num, double angulo_max, DrawingContext drco, WriteableJoint A_ini, WriteableJoint B_ini, Joint A_act, Joint B_act, MainWindow mw)
          {
             this.num_puntos = ((num<3) ? 3 : num);
+            this.angulo_max = angulo_max;
             this.dc = drco;
             this.A_initial = A_ini;
             this.B_initial = B_ini;
@@ -115,7 +117,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          /// </summary>
          public void dibujarPuntos()
          {
-            float dist = (this.getBinitial().Position.Y - this.getAinitial().Position.Y) / this.getNumPuntos();
+            float dist = (this.getBinitial().Position.Y - this.getAinitial().Position.Y) * (1 - (float) Math.Cos(this.angulo_max*Math.PI/180)) / this.getNumPuntos();
 
             SkeletonPoint punto_1 = this.getAactual().Position;
             if (this.getAactual().JointType == JointType.HipRight || this.getAactual().JointType == JointType.ShoulderRight)
@@ -126,7 +128,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             for (int i = 0; i < this.getNumPuntos(); i++)
             {
                SkeletonPoint punto = punto_1, panterior = punto_1, psiguiente = punto_1;
-               punto.Y += dist * i;
+               punto.Y += dist * i + (this.getBinitial().Position.Y - this.getAinitial().Position.Y) * (float) Math.Cos(this.angulo_max * Math.PI / 180);
 
                float pos_Y = this.getBactual().Position.Y;
 
