@@ -383,70 +383,137 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
       public class MovimientoPierna : Movimiento
       {
-         public enum ESTADO { REPOSO, MOVIMIENTO, ALCANZADO, FAIL, INICIAL };
+         // Posibles estados de ejecución del movimiento
+         public enum ESTADO { INITIAL, REPOSE, MOVING, COMPLETE, FAIL };
 
-         private Joint hip_initial, knee_initial;
-         private const double MIN_ANGULO = 5;
-         private const double MAX_ANGULO = 70;
-         private double angle;
+         private const double MIN_ANGULO = 3;        // Ángulo a partir del cual se considera que la pierna entra en movimiento
+         private const double MAX_ANGULO = 70;       // Ángulo establecido como tope del movimiento a realizar
          private const double ERROR = 0.05;          // Se admite un error del 5%
-         private const double DESPL_PERMITED = 4;    // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm.
-         private String message_error;
-         private ESTADO state;
+         private const double DESPL_PERMITED = 4;    // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm
+         private Joint hip_initial, knee_initial;    // Cadera y rodilla capturadas inicialmente
+         private double angle;                       // Ángulo de la pierna en movimiento
+         private ESTADO state;                       // Estado de ejecución del movimiento
 
+         /// <summary>
+         /// Constructor de la clase
+         /// </summary>
          public MovimientoPierna()
          {
-            this.state = ESTADO.INICIAL;
-            message_error = "Realice el movimiento como se le ha indicado.";
+            this.state = ESTADO.INITIAL;
          }
 
-         // Métodos consultores
+         /// <summary>
+         /// Devuelve la cadera detectada inicialmente
+         /// </summary>
+         /// <returns>cadera inicial</returns>
          public Joint getInitialHip()
          {
             return this.hip_initial;
          }
 
+         /// <summary>
+         /// Devuelve la rodilla detectada inicialmente
+         /// </summary>
+         /// <returns>rodilla inicial</returns>
          public Joint getInitialKnee()
          {
             return this.knee_initial;
          }
 
+         /// <summary>
+         /// Devuelve el estado de ejecución del movimiento
+         /// </summary>
+         /// <returns>estado del movimiento</returns>
          public ESTADO getState()
          {
             return this.state;
          }
 
-         public String getMessageError()
-         {
-            return this.message_error;
-         }
-
+         /// <summary>
+         /// Devuelve el ángulo de la pierna en movimiento
+         /// </summary>
+         /// <returns>ángulo de  la pierna</returns>
          public double getAngle()
          {
             return this.angle;
          }
 
-         // Métodos modificadores
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado INITIAL
+         /// </summary>
+         /// <returns>initial state</returns>
+         public bool getINITIAL()
+         {
+            return this.getState() == ESTADO.INITIAL;
+         }
+
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado REPOSE
+         /// </summary>
+         /// <returns>repose state</returns>
+         public bool getREPOSE()
+         {
+            return this.getState() == ESTADO.REPOSE;
+         }
+
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado MOVING
+         /// </summary>
+         /// <returns>moving state</returns>
+         public bool getMOVING()
+         {
+            return this.getState() == ESTADO.MOVING;
+         }
+
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado COMPLETE
+         /// </summary>
+         /// <returns>complete state</returns>
+         public bool getCOMPLETE()
+         {
+            return this.getState() == ESTADO.COMPLETE;
+         }
+
+         /// <summary>
+         /// Devuelve si la ejecución se encuentra en estado FAIL
+         /// </summary>
+         /// <returns>fail state</returns>
+         public bool getFAIL()
+         {
+            return this.getState() == ESTADO.FAIL;
+         }
+
+         /// <summary>
+         /// Establece la cadera inicialmente
+         /// </summary>
+         /// <param name="ini_hip">cadera inicial</param>
          public void setInitialHip(Joint ini_hip)
          {
             this.hip_initial = ini_hip;
          }
 
+         /// <summary>
+         /// Establece la rodilla inicialmente
+         /// </summary>
+         /// <param name="ini_knee">rodilla inicial</param>
          public void setInitialKnee(Joint ini_knee)
          {
             this.knee_initial = ini_knee;
          }
 
+         /// <summary>
+         /// Establece el estado de ejecución del movimiento
+         /// </summary>
+         /// <param name="st">estado de ejecución</param>
          public void setState(ESTADO st)
          {
             this.state = st;
          }
 
-         public void setMessageError(String sms)
-         {
-            this.message_error = sms;
-         }
-
+         /// <summary>
+         /// Establece el ángulo que forma la pierna en movimiento
+         /// </summary>
+         /// <param name="alpha">ángulo de la pierna</param>
          public void setAngle(double alpha)
          {
             this.angle = alpha;
@@ -468,43 +535,38 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                this.valores_base(this.getInitialHip().Position, this.getInitialKnee().Position, knee.Position, out angulo, out dif_x, out b);
                this.setAngle(angulo);
 
-               double ang_err_max = angulo + (angulo*ERROR);
-               double ang_err_min = angulo - (angulo*ERROR);
-
-               if (this.getState() == ESTADO.MOVIMIENTO && dif_x >= (DESPL_PERMITED*ERROR))
+               // Si levantando la pierna, la rodilla se desplaza hacia algún lado más de lo
+               // permitido, el movimiento es INCORRECTO.
+               if (dif_x > (DESPL_PERMITED * ERROR) && this.getMOVING())
                {
                   this.setState(ESTADO.FAIL);
                }
-               else if (MIN_ANGULO < ang_err_min && ang_err_max < MAX_ANGULO && this.getState() == ESTADO.REPOSO)
+               // Si el ángulo de la pierna supera el ángulo mínimo, se está elevando la rodilla
+               else if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getREPOSE())
                {
-                  this.setState(ESTADO.MOVIMIENTO);
+                  this.setState(ESTADO.MOVING);
                }
-               else if (MAX_ANGULO <= ang_err_max && this.getState() == ESTADO.MOVIMIENTO)
+               // Si el ángulo de la pierna supera el ángulo MÁXIMO, se ha completado el movimiento
+               else if (MAX_ANGULO <= angulo && this.getMOVING())
                {
-                  this.setState(ESTADO.ALCANZADO);
+                  this.setState(ESTADO.COMPLETE);
                }
-               else if (MIN_ANGULO < ang_err_min && ang_err_max < MAX_ANGULO && this.getState() == ESTADO.ALCANZADO)
+               // Si el ángulo de la pierna decrementa por debajo del ángulo máximo, se está bajando la rodilla
+               else if (MIN_ANGULO < angulo && angulo < MAX_ANGULO && this.getCOMPLETE())
                {
-                  this.setState(ESTADO.MOVIMIENTO);
+                  this.setState(ESTADO.MOVING);
                }
-               else if (ang_err_min <= MIN_ANGULO && this.getState() == ESTADO.MOVIMIENTO)
+               // Si el ángulo de la pierna decrementa por debajo del ángulo mínimo, se ha llegado a la posición de reposo
+               else if (angulo < MIN_ANGULO && this.getMOVING())
                {
-                  this.setState(ESTADO.REPOSO);
+                  this.setState(ESTADO.REPOSE);
                }
-               else if (this.getState() == ESTADO.FAIL)
-               {
-                  if (Posicion.IsAlignedBodyAndArms(skel) && (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
-                  {
-                     this.setState(ESTADO.INICIAL);
-                  }
-                  else
-                     this.setMessageError("Coloque el cuerpo en la posición de reposo.");
-               }
-               else if (this.getState() == ESTADO.INICIAL)
+               // Si el estado es INITIAL, se capturan la cadera y la rodilla y se pasa al estado REPOSE
+               else if (this.getINITIAL())
                {
                   this.setInitialHip(hip);
                   this.setInitialKnee(knee);
-                  this.setState(ESTADO.REPOSO);
+                  this.setState(ESTADO.REPOSE);
                }
             }
             else // Si no se trata de la cadera y rodilla de la misma pierna no se ejecuta nada

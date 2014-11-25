@@ -326,43 +326,5 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            DepthImagePoint depthPoint = this.sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
            return new Point(depthPoint.X, depthPoint.Y);
         }
-
-        /// <summary>
-        /// Handles the user clicking on the screenshot button
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void ButtonScreenshotClick(object sender, RoutedEventArgs e)
-        {
-            if (null == this.sensor)
-            {
-                return;
-            }
-
-            // create a png bitmap encoder which knows how to save a .png file
-            BitmapEncoder encoder = new PngBitmapEncoder();
-
-            // create frame from the writable bitmap and add to encoder
-            encoder.Frames.Add(BitmapFrame.Create(this.colorBitmap));
-
-            string time = System.DateTime.Now.ToString("hh'-'mm'-'ss", CultureInfo.CurrentUICulture.DateTimeFormat);
-
-            string myPhotos = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-
-            string path = Path.Combine(myPhotos, "KinectSnapshot-" + time + ".png");
-
-            // write the new file to disk
-            try
-            {
-                using (FileStream fs = new FileStream(path, FileMode.Create))
-                {
-                    encoder.Save(fs);
-                }
-            }
-            catch (IOException)
-            {
-                //this.statusBarText.Text = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.ScreenshotWriteFailed, path);
-            }
-        }
     }
 }
