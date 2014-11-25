@@ -399,7 +399,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          private double offset_dim;
          private double offset_angulo;
 
-         public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo = 70.0, double offset_perc = 0.1, int puntos_calibracion = 60)
+         public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo = 70.0, double offset_perc = 0.2, int puntos_calibracion = 60)
          {
             this.wrist_type = wrist;
             this.shoulder_type = shoulder;
@@ -452,6 +452,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             double diferencia_X, diferencia_Z;
 
             if (estado == ESTADO.CALIBRAR)
+            // Establece de manera precisa la posicion de muñeca y hombro.
+            // Ademas, calcula automaticamente el grado de error en algunas medidas.
             {
                if (contador_puntos < puntos_calibracion)
                {
@@ -493,23 +495,24 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   estado = ESTADO.PREPARADO;
                }
             }
-            else if (estado == ESTADO.HACIA_ARRIBA)
+            else if (estado == ESTADO.HACIA_ARRIBA) // Detecta el movimiento hacia arriba del brazo
             {
                valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
 
-               if (diferencia_X > (2 * error_medio_X + offset_dim) && false)
+               if (diferencia_X > (2 * error_medio_X + offset_dim)) // margen entorno a eje X
                {
                   estado = ESTADO.ERROR_MARGEN_X;
                }
-               else if (diferencia_Z > (2 * error_medio_Z + offset_dim))
+               else if (diferencia_Z > (2 * error_medio_Z + offset_dim)) // no retroceder el brazo hacia atras
                {
                   estado = ESTADO.ERROR_MARGEN_Z;
                }
-               else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo )
+               else if ((angulo_objetivo - error_medio_angulo - offset_angulo / 2) < this.angulo &&
+                   this.angulo < (angulo_objetivo + error_medio_angulo + offset_angulo / 2)) // movimiento completado 
                {
                   estado = ESTADO.COMPLETADO;
                }
-            }
+            }/*
             else if (estado == ESTADO.HACIA_ABAJO)
             {
                valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
@@ -526,7 +529,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                {
                   estado = ESTADO.COMPLETADO;
                }
-            }
+            }*/
          }
 
          public ESTADO getEstado()
