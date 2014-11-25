@@ -14,7 +14,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
     using System.Collections.Generic;
-   using System.Windows.Controls;
+    using System.Windows.Controls;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -75,10 +75,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-//           Image image = new Image();
-//           image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/medals.png");
-//           medalla.Source = image.Source;
-
            // Create the drawing group we'll use for drawing
            this.drawingGroup = new DrawingGroup();
 
@@ -100,15 +96,18 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
             if (null != this.sensor)
             {
-               this.Indicaciones.Source = this.imageSource;
+                // CÓDIGO EXTRAIDO DEL COMPAÑERO: OLIVER SÁNCHEZ MARÍN
+                this.Indicaciones.Source = this.imageSource;
 
-               // Turn on the skeleton stream to receive skeleton frames
-               this.sensor.SkeletonStream.Enable();
+                // CÓDIGO EXTRAIDO DEL COMPAÑERO: OLIVER SÁNCHEZ MARÍN
+                // Turn on the skeleton stream to receive skeleton frames
+                this.sensor.SkeletonStream.Enable();
 
-               // Add an event handler to be called whenever there is new color frame data
-               this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
- 
-               // Turn on the color stream to receive color frames
+                // CÓDIGO EXTRAIDO DEL COMPAÑERO: OLIVER SÁNCHEZ MARÍN
+                // Add an event handler to be called whenever there is new color frame data
+                this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
+
+                // Turn on the color stream to receive color frames
                 this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
                 // Allocate space to put the pixels we'll receive
@@ -172,12 +171,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
-        MovimientoPierna mov_pierna = new MovimientoPierna();
-
-        // Tipos de datos necesarios
+        // VARIABLES NECESARIAS
         enum ESTADO { ESPERA, DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
         bool movimiento_1 = true;
-        const double ANGULO_SINC = 30; // diferencia de angulos en posiciones finales
+        const double ANGULO_SINC = 30;       // diferencia de ángulos en posiciones finales
         MovimientoBrazo mov_brazo_izq = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
         MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
         MovimientoPierna mov_pierna_izq = new MovimientoPierna();
@@ -192,7 +189,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        // ****Controlador de eventos del esqueleto
         private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
            Skeleton[] skeletons = new Skeleton[0];
@@ -217,34 +213,26 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                       /*
-                       mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
-                       sms_block.Text = mov_pierna_der.getMessageError();
-
-                       Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
-                                      skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
-                       barra_pder.dibujarPuntos();
-                       */
-                       /*
-                        Image image = new Image();
-                        image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/Logo.png");
-                        medalla.Source = image.Source;
-                        */
-
                        num_rep.Text = repeticiones.ToString();
-                       sms_block.Text = mov_pierna_izq.getState().ToString()+ " - ".ToString() + state.ToString() + String.Format("{0:0.0}", mov_brazo_der.getAngulo()) + " - ".ToString()+String.Format("{0:0.0}", mov_pierna_izq.getAngle());
-
+                       time.Text = "- - -";
+// TESTEO DE ERRORES
+                       sms_block.Text = mov_pierna_izq.getState().ToString() + " - " + state.ToString() + " >> "
+                          + String.Format("{0:0.0}", mov_brazo_der.getAngulo())
+                          + " - " + String.Format("{0:0.0}", mov_pierna_izq.getAngle());
+// -----------------
                        if (state == ESTADO.INICIO && Posicion.IsAlignedBodyAndArms(skel) &&
                           (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
                        {
                           state = ESTADO.DETECTADO;
-                          mov_brazo_der.reset(); // indica que se va a volver a calibrar porque
-                          mov_brazo_izq.reset(); // la posicion inicial puede haber cambiado
+                          mov_brazo_der.reset();              // Indica que se va a volver a calibrar porque
+                          mov_brazo_izq.reset();              // la posicion inicial puede haber cambiado
+/*CAMBIADO*/              mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
+/*CAMBIADO*/              mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
                        }
                        else if (state == ESTADO.DETECTADO)
                        {
-                          mov_brazo_der.actualizar(skel); // calibrando...
-                          mov_brazo_izq.actualizar(skel); // calibrando...
+                          mov_brazo_der.actualizar(skel);     // calibrando...
+                          mov_brazo_izq.actualizar(skel);     // calibrando...
 
                           if (mov_brazo_der.preparado() && mov_brazo_izq.preparado()) // terminada calibracion?
                           {
@@ -277,7 +265,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
-                          else if (mov_brazo_der.completado() && mov_pierna_izq.getCOMPLETE()) // cuidado con el angulo de la pierna!
+                          else if (mov_brazo_der.completado() && mov_pierna_izq.getCOMPLETE())
                           {
                              repeticiones--;
                              if (repeticiones == 0)
@@ -287,6 +275,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 movimiento_1 = false;
                                 state = ESTADO.MOV_2;
                                 mov_brazo_izq.detectar(); // listo para detectar el movimiento
+/*AÑADIDO*/                     mov_pierna_der.setState(MovimientoPierna.ESTADO.MOVING);    // Se debe restaurar el estado.
                              }
                           }
                        }
@@ -307,7 +296,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
-                          else if (mov_brazo_izq.completado() && mov_pierna_der.getCOMPLETE()) // cuidado con el angulo de la pierna!
+                          else if (mov_brazo_izq.completado() && mov_pierna_der.getCOMPLETE())
                           {
                              repeticiones--;
                              if (repeticiones == 0)
@@ -317,6 +306,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 movimiento_1 = true;
                                 state = ESTADO.MOV_1;
                                 mov_brazo_der.detectar(); // listo para detectar el movimiento
+/*AÑADIDO*/                     mov_pierna_izq.setState(MovimientoPierna.ESTADO.MOVING);    // Se debe restaurar el estado.
                              }
                           }
                        }
@@ -325,16 +315,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           sms_block.Text = "Coloque el cuerpo en la posición de reposo.";
                           state = ESTADO.INICIO;
                           fallos++;
-                          mov_pierna_der.setINITIAL();
-                          mov_pierna_izq.setINITIAL();
                        }
                        else if (state == ESTADO.COMPLETADO)
                        {
-                           // fallos, total_segundos -> medallas
                            t_final = DateTime.Now;
                            TimeSpan diferencia = t_final - t_inicial;
                            double total_segundos = diferencia.TotalSeconds;
-                           info.Text = diferencia.ToString();
+                           time.Text = diferencia.ToString("0.000");
 
                            double eval = (total_segundos / 20) * Math.Sqrt(fallos);
 
@@ -343,26 +330,22 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 Image image = new Image();
                                 image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/oro_medal.png");
                                 medalla.Source = image.Source;
-                               // oro
                            }
                            else if (eval <= 2.0)
                            {
                                Image image = new Image();
                                image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/plata_medal.png");
                                medalla.Source = image.Source;
-                               // plata
                            }
                            else if (eval <= 3.0)
                            {
                                Image image = new Image();
                                image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/bronce_medal.png");
                                medalla.Source = image.Source;
-                               //bronce
                            }
                            else
                            {
                                sms_block.Text = "¡ Gracias por participar ! (Consejo: debes mejorar)";
-                               // premio consolacion
                            }
                        }
                     }
@@ -397,8 +380,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            t_inicial = DateTime.Now;
            fallos = 0;
            repeticiones = 10;
-           mov_pierna_der.setINITIAL();
-           mov_pierna_izq.setINITIAL();
+           mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
+           mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
            mov_brazo_der.reset();
            mov_brazo_izq.reset();
            movimiento_1 = true;
@@ -406,6 +389,17 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            Image image = new Image();
            image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/3_medals.png");
            medalla.Source = image.Source;
+        }
+
+        private void slider_error_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+           slider_error.Minimum = 0.05;
+           slider_error.Maximum = 0.5;
+
+           mov_pierna_der.setError(slider_error.Value);
+           mov_pierna_izq.setError(slider_error.Value);
+
+           error_actual.Text = slider_error.Value.ToString("0.00");
         }
     }
 }

@@ -113,7 +113,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          /// <summary>
-         /// Dibuja en pantalla una barra de indicadores para retroalimentación del movimiento
+         /// Dibuja en pantalla una barra de indicadores para retroalimentación del movimiento al usuario
          /// </summary>
          public void dibujarPuntos()
          {
@@ -156,6 +156,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
       public class Posicion
       {
+         // CÓDIGO EXTRAIDO DE LA COMPAÑERA: CARLA MARISA LOBO SIMÕES
          // boolean method that return true if body is completely aligned and arms are in a relaxed position
          public static bool IsAlignedBodyAndArms(Skeleton received)
          {
@@ -232,6 +233,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                return false;
          }
 
+         // CÓDIGO EXTRAIDO DE LA COMPAÑERA: CARLA MARISA LOBO SIMÕES
          //first position to be Tracked and Accepted
          public static bool AreFeetTogether(Skeleton received)
          {
@@ -277,6 +279,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             return false;
          }//close method AreFeetTogether
 
+         // CÓDIGO EXTRAIDO DE LA COMPAÑERA: CARLA MARISA LOBO SIMÕES
          //method for the second position feet separate between 60 degrees to be accepted
          public static bool AreFeetSeparate(Skeleton received)
          {
@@ -570,8 +573,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          private const double MIN_ANGULO = 3;        // Ángulo a partir del cual se considera que la pierna entra en movimiento
          private const double MAX_ANGULO = 50;       // Ángulo establecido como tope del movimiento a realizar
-         private const double ERROR = 0.2;           // Se admite un error del 5%
-         private const double DESPL_PERMITED = 0.1; // Se admite un desplazamiento lateral de la rodilla de hasta 4 cm
+         private const double DESPL_PERMITED = 0.1;  // Se admite un desplazamiento lateral de la rodilla de hasta 10 cm
+         private double ERROR;                       // Se admite un error del 20%, inicialmente
          private Joint hip_initial, knee_initial;    // Cadera y rodilla capturadas inicialmente
          private double angle;                       // Ángulo de la pierna en movimiento
          private ESTADO state;                       // Estado de ejecución del movimiento
@@ -582,6 +585,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public MovimientoPierna()
          {
             this.state = ESTADO.INITIAL;
+            this.ERROR = 0.2;
          }
 
          /// <summary>
@@ -627,15 +631,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          public bool getINITIAL()
          {
             return this.getState() == ESTADO.INITIAL;
-         }
-
-         /// <summary>
-         /// Devuelve si la ejecución se encuentra en estado INITIAL
-         /// </summary>
-         /// <returns>initial state</returns>
-         public void setINITIAL()
-         {
-             this.setState(ESTADO.INITIAL);
          }
 
          /// <summary>
@@ -711,6 +706,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
          }
 
          /// <summary>
+         /// Establece el error admitido en la realización del movimiento
+         /// </summary>
+         /// <param name="err">error permitido</param>
+         public void setError(double err)
+         {
+            this.ERROR = err;
+         }
+
+         /// <summary>
          /// Actualiza las componentes del movimiento de la pierna
          /// </summary>
          /// <param name="hip">punto de la cadera en el frame actual</param>
@@ -728,7 +732,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                // Si levantando la pierna, la rodilla se desplaza hacia algún lado más de lo
                // permitido, el movimiento es INCORRECTO.
-               if (dif_x > (DESPL_PERMITED * ERROR) && this.getMOVING())
+               if (dif_x > DESPL_PERMITED + (DESPL_PERMITED * ERROR) && this.getMOVING())
                {
                   this.setState(ESTADO.FAIL);
                }
