@@ -167,6 +167,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 
+<<<<<<< HEAD
         // Tipos de datos necesarios
         enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
         //bool movimiento_1 = true;
@@ -177,6 +178,20 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         MovimientoPierna mov_pierna_der = new MovimientoPierna();
         //ESTADO state = ESTADO.INICIO;
         int repetetitions = 10;
+=======
+        MovimientoPierna mov_pierna = new MovimientoPierna();
+>>>>>>> dev_chema
+
+        // Tipos de datos necesarios
+        enum ESTADO { DETECTADO, MOV_1, MOV_2, COMPLETADO, FAIL, CALIBRAR, INICIO };
+        bool movimiento_1 = true;
+        const double ANGULO_SINC = 30; // diferencia de angulos en posiciones finales
+        MovimientoBrazo mov_brazo_izq = new MovimientoBrazo(JointType.WristLeft, JointType.ShoulderLeft);
+        MovimientoBrazo mov_brazo_der = new MovimientoBrazo(JointType.WristRight, JointType.ShoulderRight);
+        MovimientoPierna mov_pierna_izq = new MovimientoPierna();
+        MovimientoPierna mov_pierna_der = new MovimientoPierna();
+        ESTADO state = ESTADO.INICIO;
+        int repeticiones = 10;
 
         /// <summary>
         /// Event handler for Kinect sensor's SkeletonFrameReady event
@@ -208,6 +223,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                  {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
+<<<<<<< HEAD
                        mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
 
                        Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
@@ -217,11 +233,24 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        num_rep.Text = repetetitions.ToString();
                        /*
                        Indicador barra_pder, barra_pizq, barra_bder, barra_bizq;
+=======
+                       /*
+                       mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
+                       sms_block.Text = mov_pierna_der.getMessageError();
+
+                       Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+                                      skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
+                       barra_pder.dibujarPuntos();
+                       */
+                       num_rep.Text = repeticiones.ToString();
+                       sms_block.Text = mov_brazo_der.getEstado().ToString()+ " - ".ToString() + state.ToString() + String.Format("{0:0.0}", mov_brazo_der.getAngulo()) + " - ".ToString()+String.Format("{0:0.0}", mov_pierna_izq.getAngle());
+>>>>>>> dev_chema
 
                        if (state == ESTADO.INICIO && Posicion.IsAlignedBodyAndArms(skel) &&
                           (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
                        {
                           state = ESTADO.DETECTADO;
+<<<<<<< HEAD
                        }
                        else if (state == ESTADO.DETECTADO)
                        {
@@ -237,17 +266,49 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                              state = ESTADO.MOV_1;
                           else
                              state = ESTADO.MOV_2;
+=======
+                          mov_brazo_der.reset(); // indica que se va a volver a calibrar porque
+                          mov_brazo_izq.reset(); // la posicion inicial puede haber cambiado
+                       }
+                       else if (state == ESTADO.DETECTADO)
+                       {
+                          mov_brazo_der.actualizar(skel); // calibrando...
+                          mov_brazo_izq.actualizar(skel); // calibrando...
+
+                          if (mov_brazo_der.preparado() && mov_brazo_izq.preparado()) // terminada calibracion?
+                          {
+                              if (movimiento_1)  // seguimos por el ejercicio que toca
+                              {
+                                  state = ESTADO.MOV_1;
+                                  mov_brazo_der.detectar(); // listo para detectar el movimiento
+                              }
+                              else
+                              {
+                                  state = ESTADO.MOV_2;
+                                  mov_brazo_izq.detectar(); // listo para detectar el movimiento
+                              }
+                          }
+>>>>>>> dev_chema
                        }
                        else if (state == ESTADO.MOV_1)
                        {
                           mov_pierna_izq.updateMovement(skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], skel);
                           mov_brazo_der.actualizar(skel);
+<<<<<<< HEAD
 
                           barra_bder = new Indicador(15, dc, mov_brazo_der.getShoulderPoint(), mov_brazo_der.getWristPoint(),
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                           barra_bder.dibujarPuntos();
 
                           barra_pizq = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
+=======
+                          
+                          Indicador barra_bder = new Indicador(15, dc, mov_brazo_der.getShoulderPoint(), mov_brazo_der.getWristPoint(),
+                                      skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.WristRight], this);
+                          barra_bder.dibujarPuntos();
+
+                          Indicador barra_pizq = new Indicador(15, dc, new WriteableJoint(mov_pierna_izq.getInitialHip()), new WriteableJoint(mov_pierna_izq.getInitialKnee()),
+>>>>>>> dev_chema
                                       skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
                           barra_pizq.dibujarPuntos();
 
@@ -255,15 +316,28 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
+<<<<<<< HEAD
                           else if (mov_brazo_der.completado() && mov_pierna_izq.getState() == MovimientoPierna.ESTADO.ALCANZADO)
                           {
                              repetetitions--;
                              if (repetetitions == 0)
+=======
+                          //else if (mov_brazo_der.completado() && mov_pierna_izq.getState() == MovimientoPierna.ESTADO.ALCANZADO)
+                          //else if (mov_brazo_der.getAngulo() >= 70 && mov_pierna_izq.getAngle() >= 70)
+                          else if (mov_brazo_der.completado() && mov_pierna_izq.getAngle() >= 50) // cuidado con el angulo de la pierna!
+                          {
+                             repeticiones--;
+                             if (repeticiones == 0)
+>>>>>>> dev_chema
                                 state = ESTADO.COMPLETADO;
                              else
                              {
                                 movimiento_1 = false;
                                 state = ESTADO.MOV_2;
+<<<<<<< HEAD
+=======
+                                mov_brazo_izq.detectar(); // listo para detectar el movimiento
+>>>>>>> dev_chema
                              }
                           }
                        }
@@ -271,12 +345,21 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        {
                           mov_pierna_der.updateMovement(skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], skel);
                           mov_brazo_izq.actualizar(skel);
+<<<<<<< HEAD
 
                           barra_bizq = new Indicador(15, dc, mov_brazo_izq.getShoulderPoint(), mov_brazo_izq.getWristPoint(),
                                       skel.Joints[JointType.HipLeft], skel.Joints[JointType.KneeLeft], this);
                           barra_bizq.dibujarPuntos();
 
                           barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+=======
+                          
+                          Indicador barra_bizq = new Indicador(15, dc, mov_brazo_izq.getShoulderPoint(), mov_brazo_izq.getWristPoint(),
+                                      skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.WristLeft], this);
+                          barra_bizq.dibujarPuntos();
+
+                          Indicador barra_pder = new Indicador(15, dc, new WriteableJoint(mov_pierna_der.getInitialHip()), new WriteableJoint(mov_pierna_der.getInitialKnee()),
+>>>>>>> dev_chema
                                       skel.Joints[JointType.HipRight], skel.Joints[JointType.KneeRight], this);
                           barra_pder.dibujarPuntos();
 
@@ -284,15 +367,28 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           {
                              state = ESTADO.FAIL;
                           }
+<<<<<<< HEAD
                           else if (mov_brazo_izq.completado() && mov_pierna_der.getState() == MovimientoPierna.ESTADO.ALCANZADO)
                           {
                              repetetitions--;
                              if (repetetitions == 0)
+=======
+                          //else if (mov_brazo_izq.completado() && mov_pierna_der.getState() == MovimientoPierna.ESTADO.ALCANZADO)
+                          //else if (mov_brazo_izq.getAngulo()>=70 && mov_pierna_der.getAngle() >= 70)
+                          else if (mov_brazo_izq.completado() && mov_pierna_der.getAngle() >= 50) // cuidado con el angulo de la pierna!
+                          {
+                             repeticiones--;
+                             if (repeticiones == 0)
+>>>>>>> dev_chema
                                 state = ESTADO.COMPLETADO;
                              else
                              {
                                 movimiento_1 = true;
                                 state = ESTADO.MOV_1;
+<<<<<<< HEAD
+=======
+                                mov_brazo_der.detectar(); // listo para detectar el movimiento
+>>>>>>> dev_chema
                              }
                           }
                        }
@@ -300,7 +396,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                        {
                           sms_block.Text = "Coloque el cuerpo en la posición de reposo.";
                           state = ESTADO.INICIO;
+<<<<<<< HEAD
                        }*/
+=======
+                       }
+>>>>>>> dev_chema
                     }
                     else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                     {
