@@ -132,6 +132,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     this.sensor = null;
                 }
             }
+            else
+               sms_block.Text = "Sensor Kinect no detectado";
         }
 
         /// <summary>
@@ -180,8 +182,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         MovimientoPierna mov_pierna_izq = new MovimientoPierna();
         MovimientoPierna mov_pierna_der = new MovimientoPierna();
         ESTADO state = ESTADO.ESPERA;
-        int repeticiones = 10;
+        const int REPS = 10;
+        int repeticiones = REPS;
         int fallos = 0;
+        bool fin = false;
         DateTime t_inicial, t_final;
 
         /// <summary>
@@ -214,11 +218,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                        num_rep.Text = repeticiones.ToString();
-                       time.Text = "- - -";
 // TESTEO DE ERRORES
-                       sms_block.Text = mov_pierna_izq.getState().ToString() + " - " + state.ToString() + " >> "
-                          + String.Format("{0:0.0}", mov_brazo_der.getAngulo())
-                          + " - " + String.Format("{0:0.0}", mov_pierna_izq.getAngle());
+//                   sms_block.Text = mov_pierna_izq.getState().ToString() + " - " + mov_brazo_der.getEstado().ToString() + " >> "
+//                      + mov_brazo_der.getAngulo().ToString("0.00")
+//                      + " - " + mov_pierna_izq.getAngle().ToString("0.00");
 // -----------------
                        if (state == ESTADO.INICIO && Posicion.IsAlignedBodyAndArms(skel) &&
                           (Posicion.AreFeetTogether(skel) || Posicion.AreFeetSeparate(skel)))
@@ -226,8 +229,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           state = ESTADO.DETECTADO;
                           mov_brazo_der.reset();              // Indica que se va a volver a calibrar porque
                           mov_brazo_izq.reset();              // la posicion inicial puede haber cambiado
-/*CAMBIADO*/              mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
-/*CAMBIADO*/              mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
+                          mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
+                          mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
+                          sms_block.Text = "Realice el ejercicio como se le ha indicado";
                        }
                        else if (state == ESTADO.DETECTADO)
                        {
@@ -275,7 +279,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 movimiento_1 = false;
                                 state = ESTADO.MOV_2;
                                 mov_brazo_izq.detectar(); // listo para detectar el movimiento
-/*AÑADIDO*/                     mov_pierna_der.setState(MovimientoPierna.ESTADO.MOVING);    // Se debe restaurar el estado.
                              }
                           }
                        }
@@ -306,7 +309,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 movimiento_1 = true;
                                 state = ESTADO.MOV_1;
                                 mov_brazo_der.detectar(); // listo para detectar el movimiento
-/*AÑADIDO*/                     mov_pierna_izq.setState(MovimientoPierna.ESTADO.MOVING);    // Se debe restaurar el estado.
                              }
                           }
                        }
@@ -316,12 +318,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           state = ESTADO.INICIO;
                           fallos++;
                        }
-                       else if (state == ESTADO.COMPLETADO)
+                       else if (state == ESTADO.COMPLETADO && !fin)
                        {
+                           fin = true;
                            t_final = DateTime.Now;
                            TimeSpan diferencia = t_final - t_inicial;
                            double total_segundos = diferencia.TotalSeconds;
-                           time.Text = diferencia.ToString("0.000");
+                           time.Text = total_segundos.ToString("0.000");
 
                            double eval = (total_segundos / 20) * Math.Sqrt(fallos);
 
@@ -330,18 +333,21 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 Image image = new Image();
                                 image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/oro_medal.png");
                                 medalla.Source = image.Source;
+                                sms_block.Text = "¡ HAS CONSEGUIDO EL ORO !";
                            }
                            else if (eval <= 2.0)
                            {
                                Image image = new Image();
                                image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/plata_medal.png");
                                medalla.Source = image.Source;
+                               sms_block.Text = "¡ HAS CONSEGUIDO LA PLATA !";
                            }
                            else if (eval <= 3.0)
                            {
                                Image image = new Image();
                                image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/bronce_medal.png");
                                medalla.Source = image.Source;
+                               sms_block.Text = "¡ HAS CONSEGUIDO EL BRONCE !";
                            }
                            else
                            {
@@ -379,13 +385,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            state = ESTADO.INICIO;
            t_inicial = DateTime.Now;
            fallos = 0;
-           repeticiones = 10;
+           repeticiones = REPS;
            mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
            mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
            mov_brazo_der.reset();
            mov_brazo_izq.reset();
            movimiento_1 = true;
-           
+           fin = false;
            Image image = new Image();
            image.Source = (ImageSource)new ImageSourceConverter().ConvertFromString("../../Images/3_medals.png");
            medalla.Source = image.Source;
