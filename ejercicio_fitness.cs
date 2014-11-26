@@ -395,6 +395,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          private SkeletonPoint initial_wrist;
          private SkeletonPoint initial_shoulder;
+         SkeletonPoint vector_brazo;
 
          private SkeletonPoint error_medio;
          private double error_medio_angulo;
@@ -420,6 +421,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             this.initial_shoulder.X = this.initial_shoulder.Y = this.initial_shoulder.Z = 0;
             this.error_medio = new SkeletonPoint();
             this.error_medio.X = this.error_medio.Y = this.error_medio.Z = 0;
+            this.vector_brazo = new SkeletonPoint();
+            this.vector_brazo.X = this.vector_brazo.Y = this.vector_brazo.Z = 0;
             this.error_medio_angulo = 0;
             this.error_medio_X = 0;
             this.error_medio_Z = 0;
@@ -474,7 +477,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                else
                {
                   SkeletonPoint wrist_with_error = new SkeletonPoint();
-                  SkeletonPoint vector_brazo = new SkeletonPoint();
                   SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
 
                   foreach (SkeletonPoint punto in l_puntos_calibracion)
@@ -517,24 +519,20 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                {
                   estado = ESTADO.COMPLETADO;
                }
-            }/*
-            else if (estado == ESTADO.HACIA_ABAJO)
-            {
-               valores_base(initial_shoulder, initial_wrist, wrist, out this.angulo, out diferencia_X, out diferencia_Z);
+            }
+         }
 
-               if (diferencia_X > (2 * error_medio_X + offset_dim))
-               {
-                  estado = ESTADO.ERROR_MARGEN_X;
-               }
-               else if (this.angulo >= (angulo_objetivo + error_medio_angulo + offset_angulo / 2))
-               {
-                  estado = ESTADO.ERROR_MARGEN_Z;
-               }
-               else if (this.angulo < (error_medio_angulo + offset_angulo / 2))
-               {
-                  estado = ESTADO.COMPLETADO;
-               }
-            }*/
+         public void setError(double new_offset_perc) 
+         {
+            double diferencia_X, diferencia_Z;
+            SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
+
+            offset_perc = new_offset_perc;
+            offset_dim = offset_perc * modulo(vector_brazo);
+            wrist_with_Z_offset = initial_wrist;
+            wrist_with_Z_offset.Z += (float)offset_dim;
+            valores_base(initial_shoulder, initial_wrist, wrist_with_Z_offset, out offset_angulo,
+                out diferencia_X, out diferencia_Z);
          }
 
          public ESTADO getEstado()

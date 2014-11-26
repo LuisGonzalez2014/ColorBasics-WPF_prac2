@@ -208,6 +208,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
            using (DrawingContext dc = this.drawingGroup.Open())
            {
+              // CÓDIGO EXTRAIDO DEL COMPAÑERO: OLIVER SÁNCHEZ MARÍN
               // Draw a transparent background to set the render size
               dc.DrawRectangle(Brushes.Transparent, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
 
@@ -404,6 +405,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
            mov_pierna_der.setError(slider_error.Value);
            mov_pierna_izq.setError(slider_error.Value);
+           mov_brazo_der.setError(slider_error.Value);
+           mov_brazo_izq.setError(slider_error.Value);
 
            error_actual.Text = slider_error.Value.ToString("0.00");
         }
