@@ -233,6 +233,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                           mov_pierna_der.setState(MovimientoPierna.ESTADO.INITIAL);
                           mov_pierna_izq.setState(MovimientoPierna.ESTADO.INITIAL);
                           sms_block.Text = "Realice el ejercicio como se le ha indicado";
+                          error_actual.Text = (slider_error.Value * 100).ToString("0.0") + " %";
                        }
                        else if (state == ESTADO.DETECTADO)
                        {
@@ -325,7 +326,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                            t_final = DateTime.Now;
                            TimeSpan diferencia = t_final - t_inicial;
                            double total_segundos = diferencia.TotalSeconds;
-                           time.Text = total_segundos.ToString("0.000");
+                           time.Text = total_segundos.ToString("0.000") + " seg.";
 
                            double eval = (total_segundos / 40) * Math.Sqrt(fallos+1);
 
@@ -405,10 +406,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
            mov_pierna_der.setError(slider_error.Value);
            mov_pierna_izq.setError(slider_error.Value);
-           mov_brazo_der.setError(slider_error.Value);
-           mov_brazo_izq.setError(slider_error.Value);
+           mov_brazo_der.setError(/*slider_error.Value*/0.2);
+           mov_brazo_izq.setError(/*slider_error.Value*/0.2);
 
-           error_actual.Text = slider_error.Value.ToString("0.00");
+           error_actual.Text = (slider_error.Value * 100).ToString("0.0") + " %";
         }
     }
 }
