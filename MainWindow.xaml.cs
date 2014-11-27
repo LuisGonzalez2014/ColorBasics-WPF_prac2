@@ -327,7 +327,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                            double total_segundos = diferencia.TotalSeconds;
                            time.Text = total_segundos.ToString("0.000");
 
-                           double eval = (total_segundos / 20) * Math.Sqrt(fallos);
+                           double eval = (total_segundos / 40) * Math.Sqrt(fallos+1);
 
                            if (eval <= 1.0)
                            {

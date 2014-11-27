@@ -407,52 +407,71 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
          public MovimientoBrazo(JointType wrist, JointType shoulder, double angulo = 70.0, double offset_perc = 0.2, int puntos_calibracion = 60)
          {
-            this.wrist_type = wrist;
-            this.shoulder_type = shoulder;
-            this.angulo_objetivo = angulo;
-            this.angulo = 0;
-            this.estado = ESTADO.CALIBRAR;
-            this.contador_puntos = 0;
-            this.puntos_calibracion = puntos_calibracion;
-            this.l_puntos_calibracion = new List<SkeletonPoint>();
-            this.initial_wrist = new SkeletonPoint();
+            this.wrist_type = wrist;       // para distinguir el lado izquierdo y el derecho
+            this.shoulder_type = shoulder; // para distinguir el lado izquierdo y el derecho
+            this.angulo_objetivo = angulo; // ángulo entre brazo inicial y final para completar el movimiento
+            this.angulo = 0;               // último angulo detectado
+            this.estado = ESTADO.CALIBRAR; // estado de detección del movimiento
+            this.contador_puntos = 0;      // contador de puntos capturados en la fase de calibración 
+            this.puntos_calibracion = puntos_calibracion; // número de puntos a acumular para la calibración
+            this.l_puntos_calibracion = new List<SkeletonPoint>(); // lista de puntos acumulados 
+            this.initial_wrist = new SkeletonPoint();              // posición inicial estimada de la muñeca (media)
             this.initial_wrist.X = this.initial_wrist.Y = this.initial_wrist.Z = 0;
-            this.initial_shoulder = new SkeletonPoint();
+            this.initial_shoulder = new SkeletonPoint();           // posición inicial estimada del hombro (media)
             this.initial_shoulder.X = this.initial_shoulder.Y = this.initial_shoulder.Z = 0;
-            this.error_medio = new SkeletonPoint();
+            this.error_medio = new SkeletonPoint();                // error medio en las medidas kinect por componente
             this.error_medio.X = this.error_medio.Y = this.error_medio.Z = 0;
-            this.vector_brazo = new SkeletonPoint();
+            this.vector_brazo = new SkeletonPoint();               // vector desde el hombro hasta la muñeca
             this.vector_brazo.X = this.vector_brazo.Y = this.vector_brazo.Z = 0;
-            this.error_medio_angulo = 0;
-            this.error_medio_X = 0;
-            this.error_medio_Z = 0;
-            this.offset_dim = 0;
-            this.offset_angulo = 0;
-            this.offset_perc = offset_perc;
+            this.error_medio_angulo = 0;                           // error medio provocado por las medidas kinect en el ángulo
+            this.error_medio_X = 0;                        // error medio en las medidas kinect en la componente X
+            this.error_medio_Z = 0;                        // error medio en las medidas kinect en la componente Z
+            this.offset_dim = 0;                           // libertad de movimiento por componente basada en el error tolerado
+            this.offset_angulo = 0;                        // libertad de movimiento para el ángulo basada en el error tolerado
+            this.offset_perc = offset_perc;                // libertad de movimiento o error tolerado
          }
 
+         /// <summary>
+         /// Devuelve el último ángulo detectado entre brazo inicial y final.
+         /// </summary>
+         /// <returns>último ángulo detectado (medido en grados) </returns>
          public double getAngulo()
          {
             return this.angulo;
          }
 
+         /// <summary>
+         /// Devuelve el punto inicial del hombro y su tipo.
+         /// </summary>
+         /// <returns>punto inicial del hombro y tipo</returns>
          public WriteableJoint getShoulderPoint()
          {
             WriteableJoint j = new WriteableJoint(this.initial_shoulder, this.shoulder_type);
             return j;
          }
 
+         /// <summary>
+         /// Devuelve el punto inicial de la muñeca y su tipo.
+         /// </summary>
+         /// <returns>punto inicial de la muñeca y tipo</returns>
          public WriteableJoint getWristPoint()
          {
             WriteableJoint j = new WriteableJoint(this.initial_wrist, this.wrist_type);
             return j;
          }
 
+         /// <summary>
+         /// Reinicia el movimiento llevándolo al estado de calibración.
+         /// </summary>
          public void reset()
          {
             this.estado = ESTADO.CALIBRAR;
          }
 
+         /// <summary>
+         /// Actualiza el estado de detección del movimiento.
+         /// </summary>
+         /// <param name="skel">Objeto Skeleton con los puntos de interés</param>
          public void actualizar(Skeleton skel)
          {
             SkeletonPoint wrist = skel.Joints[wrist_type].Position;
@@ -460,15 +479,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             double diferencia_X, diferencia_Z;
 
             if (estado == ESTADO.CALIBRAR)
-            // Establece de manera precisa la posicion de muñeca y hombro.
-            // Ademas, calcula automaticamente el grado de error en algunas medidas.
+            // Establece de manera precisa la posición de muñeca y hombro.
+            // Además, calcula automáticamente el grado de error en algunas medidas.
             {
                if (contador_puntos < puntos_calibracion)
                {
-                  initial_wrist.X += wrist.X / (float)puntos_calibracion;
+                  initial_wrist.X += wrist.X / (float)puntos_calibracion; // muñeca
                   initial_wrist.Y += wrist.Y / (float)puntos_calibracion;
                   initial_wrist.Z += wrist.Z / (float)puntos_calibracion;
-                  initial_shoulder.X += shoulder.X / (float)puntos_calibracion;
+                  initial_shoulder.X += shoulder.X / (float)puntos_calibracion; // hombro
                   initial_shoulder.Y += shoulder.Y / (float)puntos_calibracion;
                   initial_shoulder.Z += shoulder.Z / (float)puntos_calibracion;
                   l_puntos_calibracion.Add(shoulder);
@@ -479,7 +498,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   SkeletonPoint wrist_with_error = new SkeletonPoint();
                   SkeletonPoint wrist_with_Z_offset = new SkeletonPoint();
 
-                  foreach (SkeletonPoint punto in l_puntos_calibracion)
+                  foreach (SkeletonPoint punto in l_puntos_calibracion) // error medio asociado a errores en medidas kinect
                   {
                      error_medio.X += Math.Abs(punto.X - initial_shoulder.X) / (float)puntos_calibracion;
                      error_medio.Y += Math.Abs(punto.Y - initial_shoulder.Y) / (float)puntos_calibracion;
@@ -489,15 +508,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                   wrist_with_error.Y = initial_wrist.Y + error_medio.Y;
                   wrist_with_error.Z = initial_wrist.Z + error_medio.Z;
                   valores_base(initial_shoulder, initial_wrist, wrist_with_error, out error_medio_angulo,
-                      out error_medio_X, out error_medio_Z);
+                      out error_medio_X, out error_medio_Z);       // ángulo asociado a errores en medidas kinect
                   vector_brazo.X = initial_wrist.X - initial_shoulder.X;
                   vector_brazo.Y = initial_wrist.Y - initial_shoulder.Y;
                   vector_brazo.Z = initial_wrist.Z - initial_shoulder.Z;
-                  offset_dim = offset_perc * modulo(vector_brazo);
+                  offset_dim = offset_perc * modulo(vector_brazo); // error tolerado por componente (libertad de movimiento)
                   wrist_with_Z_offset = initial_wrist;
                   wrist_with_Z_offset.Z += (float)offset_dim;
                   valores_base(initial_shoulder, initial_wrist, wrist_with_Z_offset, out offset_angulo,
-                      out diferencia_X, out diferencia_Z);
+                      out diferencia_X, out diferencia_Z);         // error tolerado para el ángulo (libertad de movimiento)
 
                   estado = ESTADO.PREPARADO;
                }
@@ -510,7 +529,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                {
                   estado = ESTADO.ERROR_MARGEN_X;
                }
-               else if (diferencia_Z > (2 * error_medio_Z + offset_dim)) // no retroceder el brazo hacia atras
+               else if (diferencia_Z > (2 * error_medio_Z + offset_dim)) // no retroceder el brazo hacia atrás
                {
                   estado = ESTADO.ERROR_MARGEN_Z;
                }
@@ -522,6 +541,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
          }
 
+         /// <summary>
+         /// Modifica el porcentaje de error asociado al movimiento y actualiza los cálculos afectados
+         /// por la modificación.
+         /// </summary>
          public void setError(double new_offset_perc) 
          {
             double diferencia_X, diferencia_Z;
@@ -535,21 +558,39 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 out diferencia_X, out diferencia_Z);
          }
 
+         /// <summary>
+         /// Devuelve el enumerado interno que representa el estado actual de detección del movimiento.
+         /// </summary>
+         /// <returns>enumerado ESTADO con el estado del movimiento</returns>
          public ESTADO getEstado()
          {
             return estado;
          }
 
+         /// <summary>
+         /// Devuelve true si el detector acaba de terminar la calibración y está listo para
+         /// detectar un movimiento. Este estado ocurre una vez por cada calibración realizada.
+         /// </summary>
+         /// <returns>estado preparado</returns>
          public bool preparado()
          {
             return estado == ESTADO.PREPARADO;
          }
 
+         /// <summary>
+         /// Devuelve true si se ha completado con éxito la detección del movimiento en curso,
+         /// en caso contrario, devuelve false.
+         /// </summary>
+         /// <returns>movimiento completado</returns>
          public bool completado()
          {
             return estado == ESTADO.COMPLETADO;
          }
 
+         /// <summary>
+         /// Si el detector está preparado o ha completado con éxito la detección
+         /// de un movimiento anterior, activa la detección de movimiento.
+         /// </summary>
          public void detectar()
          {
             if (estado == ESTADO.PREPARADO || estado == ESTADO.COMPLETADO)
@@ -558,6 +599,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
          }
 
+         /// <summary>
+         /// Devuelve true si ha ocurrido algún error en la ejecución del movimiento detectado,
+         /// en caso contrario, devuelve false.
+         /// </summary>
+         /// <returns>estado de error</returns>
          public bool existeError()
          {
              return estado == ESTADO.ERROR_MARGEN_X || estado == ESTADO.ERROR_MARGEN_Z;
